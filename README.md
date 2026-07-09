@@ -87,8 +87,8 @@ Useful package-level commands currently available:
 bun --filter web run dev
 bun --filter http run check-types
 bun --filter @sherlock/shared run check-types
-bun --filter @sherlock/core run check-types
-bun --filter @sherlock/core run test
+bun --filter '@sherlock/core' check-types
+bun --filter '@sherlock/core' test
 bun --filter @sherlock/realtime run check-types
 bun --filter @sherlock/eval run check-types
 bun --filter @repo/ui run check-types
@@ -102,4 +102,4 @@ bun --filter @sherlock/db run test
 
 ## First Implementation Direction
 
-The recommended next phase is Phase 2 DB work after Bun is available and `bun install`, `bun run check-types`, `bun run build`, and `bun --filter @sherlock/core run test` pass locally.
+The recommended next phase is Phase 2 DB work after Bun is available and `bun install`, `bun run check-types`, `bun run build`, and `bun --filter '@sherlock/core' test` pass locally.

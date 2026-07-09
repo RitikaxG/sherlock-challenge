@@ -1,12 +1,7 @@
 {
   "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
-    "ignoreDeprecations": "6.0",
-    "noEmit": true,
-    "baseUrl": ".",
-    "paths": {
-      "@sherlock/shared": ["../shared/index.ts"]
-    }
+    "noEmit": true
   },
   "include": ["*.ts"],
   "exclude": ["*.test.ts", "node_modules"]

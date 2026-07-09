@@ -3,10 +3,6 @@
   "tasks": {
     "build": {
       "outputs": []
-    },
-    "dev": {
-      "cache": false,
-      "persistent": true
     }
   }
 }

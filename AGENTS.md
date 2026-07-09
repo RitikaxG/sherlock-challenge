@@ -60,7 +60,7 @@ bun run lint
 When package-specific commands are added, prefer Bun workspace filters, for example:
 
 ```sh
-bun --filter @sherlock/core run test
+bun --filter '@sherlock/core' test
 ```
 
 ## Testing Expectations
