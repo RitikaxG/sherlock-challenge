@@ -1,55 +1,42 @@
-import type {
-  CandidateStateSnapshot,
-  Meeting,
-  MeetingEvent,
-  Participant,
-  ParticipantScore
-} from "@sherlock/shared";
-
-export type CandidateSessionState = {
-  readonly meeting: Meeting;
-  readonly participants: readonly Participant[];
-  readonly events: readonly MeetingEvent[];
-};
-
-export function createInitialSessionState(
-  meeting: Meeting,
-  participants: readonly Participant[] = []
-): CandidateSessionState {
-  return {
-    meeting,
-    participants,
-    events: []
-  };
-}
-
-export function applyMeetingEvent(
-  state: CandidateSessionState,
-  event: MeetingEvent
-): CandidateSessionState {
-  return {
-    ...state,
-    events: [...state.events, event]
-  };
-}
-
-export function rankParticipants(
-  state: CandidateSessionState
-): CandidateStateSnapshot {
-  const participants = state.participants.map<ParticipantScore>((participant) => ({
-    participantId: participant.id,
-    displayName: participant.currentName ?? participant.displayName,
-    confidence: 0,
-    rawScore: 0
-  }));
-
-  return {
-    meetingId: state.meeting.id,
-    selectedCandidateId: null,
-    confidence: 0,
-    state: "INSUFFICIENT_DATA",
-    participants,
-    evidence: [],
-    uncertainty: ["Scoring has not been implemented yet."]
-  };
-}
+export {
+  applyMeetingEvent,
+  createInitialSessionState,
+  getParticipantDisplayName
+} from "./session-state.ts";
+export type { CandidateSessionState } from "./session-state.ts";
+export {
+  getEmailDomain,
+  includesNameToken,
+  isGenericDeviceName,
+  nameTokenOverlap,
+  normalizeEmail,
+  normalizeName,
+  safeNumber
+} from "./helpers.ts";
+export {
+  createSignal,
+  summarizeSignals
+} from "./evidence.ts";
+export {
+  extractMetadataSignals,
+  extractParticipantMetadataSignals
+} from "./metadata-signals.ts";
+export {
+  extractInterviewerExclusionSignals,
+  isKnownInterviewer
+} from "./interviewer-signals.ts";
+export { extractEventSignals } from "./event-signals.ts";
+export { extractBehaviorSignals } from "./behavior-signals.ts";
+export { extractTranscriptSignals } from "./transcript-signals.ts";
+export {
+  extractAllSignals,
+  rankParticipants
+} from "./ranking.ts";
+export type {
+  ExtractedSignal,
+  ParticipantSignalSummary,
+  SignalDirection,
+  SignalExtractionContext,
+  SignalKind,
+  SignalSource
+} from "./signal-types.ts";

@@ -20,7 +20,7 @@ Interview fraud detectors are only useful when Sherlock knows which meeting part
 The target architecture is a Bun/Turborepo monorepo with pure identity logic at the center:
 
 - `packages/shared`: Zod schemas and TypeScript contracts for meetings, participants, events, evidence, WebSocket messages, and scenarios.
-- `packages/core`: pure signal extraction, fusion scoring, confidence state machine, and explanation generation.
+- `packages/core`: pure session state, deterministic signal extraction, conservative participant ranking, and later fusion/confidence logic.
 - `packages/db`: Prisma/Postgres persistence for meetings, participants, events, score snapshots, and scenario results.
 - `packages/llm`: structured transcript role evidence adapters with deterministic fallback rules.
 - `packages/realtime`: reusable WebSocket infrastructure for connection registry, broadcaster, meeting subscriptions, and typed broadcast helpers.
@@ -38,7 +38,7 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for package responsibilities, event flo
 | 0 | Product scope, thesis, acceptance criteria, architecture docs | Done |
 | 1 | Bun/Turborepo workspace contracts and package boundary alignment | Done |
 | 2 | Prisma/Postgres persistence package | In progress |
-| 3 | Pure core domain model and deterministic signal extractors | Later |
+| 3 | Pure core domain model and deterministic signal extractors | Done |
 | 4 | Fusion engine, confidence, ambiguity, and explanations | Later |
 | 5 | Scenario simulator and evaluation harness | Later |
 | 6 | Fastify ingestion and WebSocket broadcast | Later |
@@ -55,7 +55,7 @@ This repository currently starts from a Turborepo Tailwind template and contains
 - `apps/http`: placeholder backend composition package.
 - `packages/ui`: shared React/Tailwind component package.
 - `packages/shared`: Zod schemas and TypeScript contracts.
-- `packages/core`: pure placeholder identity-engine package.
+- `packages/core`: pure session-state and deterministic signal-extraction package.
 - `packages/db`: Prisma/Postgres schema, client helper, and repository plumbing.
 - `packages/realtime`: placeholder realtime infrastructure package.
 - `packages/eval`: placeholder evaluation package.
@@ -103,6 +103,6 @@ Local Postgres:
 docker compose up -d
 ```
 
-## First Implementation Direction
+## Next Implementation Direction
 
-The recommended next phase after the DB commands pass is Phase 3: implement pure deterministic signal extractors in `packages/core` without importing `packages/db`.
+The recommended next phase after Phase 3 verification is Phase 4: implement the weighted fusion engine, confidence normalization, ambiguity margin rules, and state machine in `packages/core`.

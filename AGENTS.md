@@ -34,12 +34,11 @@ These rules apply to future Codex work in this repository.
 
 ## Current Phase Guardrail
 
-Phase 2 is Prisma/Postgres persistence only.
+Phase 3 is pure core domain model and deterministic signal extraction only.
 
 Do not implement yet:
 
 - scoring engine
-- signal extractors
 - WebSocket behavior
 - Fastify route behavior
 - dashboard
