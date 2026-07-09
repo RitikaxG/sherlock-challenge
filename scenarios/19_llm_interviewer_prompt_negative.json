@@ -1,0 +1,45 @@
+{
+  "id": "19_llm_interviewer_prompt_negative",
+  "title": "LLM interviewer prompt evidence prevents candidate selection",
+  "meeting": {
+    "id": "scenario_19",
+    "candidateName": "Ritika Gupta",
+    "candidateEmail": "ritika@example.com",
+    "interviewerNames": ["Priya Sharma"],
+    "interviewerEmails": ["priya@sherlock.ai"],
+    "companyDomains": ["sherlock.ai"]
+  },
+  "participants": [
+    { "id": "p_prompt", "meetingId": "scenario_19", "displayName": "Guest" }
+  ],
+  "events": [
+    { "type": "participant_joined", "participantId": "p_prompt", "timestampSec": 0 },
+    {
+      "type": "llm_transcript_evidence",
+      "participantId": "p_prompt",
+      "timestampSec": 20,
+      "source": "gemini_transcript_classifier",
+      "sourceEventId": "scenario_19_llm_1",
+      "role": "interviewer_like",
+      "confidence": 0.88,
+      "selfIdentifiedName": null,
+      "mentionedCandidateName": false,
+      "shouldAffectCandidateIdentity": true,
+      "uncertainty": [],
+      "evidence": [
+        {
+          "kind": "interviewer_question_prompt",
+          "role": "interviewer_like",
+          "confidence": 0.88,
+          "strength": "strong",
+          "matchedText": "Tell me about yourself",
+          "reason": "Speaker prompted another participant like an interviewer."
+        }
+      ]
+    }
+  ],
+  "expected": {
+    "candidateParticipantId": null,
+    "finalState": "INSUFFICIENT_DATA"
+  }
+}

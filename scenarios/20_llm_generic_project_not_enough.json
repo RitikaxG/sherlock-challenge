@@ -1,0 +1,45 @@
+{
+  "id": "20_llm_generic_project_not_enough",
+  "title": "LLM generic project evidence alone remains insufficient",
+  "meeting": {
+    "id": "scenario_20",
+    "candidateName": "Ritika Gupta",
+    "candidateEmail": "ritika@example.com",
+    "interviewerNames": ["Priya Sharma"],
+    "interviewerEmails": ["priya@sherlock.ai"],
+    "companyDomains": ["sherlock.ai"]
+  },
+  "participants": [
+    { "id": "p_candidate", "meetingId": "scenario_20", "displayName": "MacBook Pro" }
+  ],
+  "events": [
+    { "type": "participant_joined", "participantId": "p_candidate", "timestampSec": 0 },
+    {
+      "type": "llm_transcript_evidence",
+      "participantId": "p_candidate",
+      "timestampSec": 20,
+      "source": "gemini_transcript_classifier",
+      "sourceEventId": "scenario_20_llm_1",
+      "role": "candidate_like",
+      "confidence": 0.45,
+      "selfIdentifiedName": null,
+      "mentionedCandidateName": false,
+      "shouldAffectCandidateIdentity": true,
+      "uncertainty": ["Generic project language is weak role evidence."],
+      "evidence": [
+        {
+          "kind": "candidate_project_statement",
+          "role": "candidate_like",
+          "confidence": 0.45,
+          "strength": "weak",
+          "matchedText": "my project",
+          "reason": "Project discussion is generic and not enough by itself."
+        }
+      ]
+    }
+  ],
+  "expected": {
+    "candidateParticipantId": null,
+    "finalState": "INSUFFICIENT_DATA"
+  }
+}

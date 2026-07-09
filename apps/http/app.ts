@@ -3,6 +3,7 @@ import {
   createMeetingConnectionRegistry,
   type MeetingConnectionRegistry
 } from "@sherlock/realtime";
+import type { TranscriptClassifierProvider } from "@sherlock/llm";
 
 import { createOptionalPersistence } from "./persistence.ts";
 import { registerRoutes } from "./routes.ts";
@@ -17,6 +18,7 @@ export type CreateHttpAppOptions = {
   readonly sessionStore?: MeetingSessionStore;
   readonly persistence?: PersistenceAdapter;
   readonly realtimeRegistry?: MeetingConnectionRegistry;
+  readonly transcriptClassifier?: TranscriptClassifierProvider;
   readonly logger?: boolean;
 };
 
@@ -28,7 +30,12 @@ export async function createHttpApp(options: CreateHttpAppOptions = {}) {
     options.realtimeRegistry ?? createMeetingConnectionRegistry();
 
   await registerWebsocket(app, { sessionStore, realtimeRegistry });
-  await registerRoutes(app, { sessionStore, persistence, realtimeRegistry });
+  await registerRoutes(app, {
+    sessionStore,
+    persistence,
+    realtimeRegistry,
+    transcriptClassifier: options.transcriptClassifier
+  });
 
   return app;
 }

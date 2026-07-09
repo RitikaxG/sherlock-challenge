@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { createMeetingConnectionRegistry } from "@sherlock/realtime";
+import { createMockTranscriptClassifierProvider } from "@sherlock/llm";
 
 import { createHttpApp, createNoopPersistence } from "./index.ts";
 import type { CreateMeetingRequest } from "./types.ts";
@@ -269,5 +270,64 @@ describe("apps/http", () => {
         snapshot: expect.objectContaining({ meetingId: "meeting_1" })
       })
     );
+  });
+
+  test("with transcript classifier configured, transcript ingestion applies LLM evidence", async () => {
+    const app = await createHttpApp({
+      persistence: createNoopPersistence(),
+      transcriptClassifier: createMockTranscriptClassifierProvider()
+    });
+    openApps.push(app);
+    await createMeeting(app);
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/meetings/meeting_1/events",
+      payload: {
+        type: "transcript_chunk",
+        participantId: "p_candidate",
+        timestampSec: 90,
+        text: "My name is Ritika Gupta, I am here for the interview.",
+        sourceEventId: "transcript_1"
+      }
+    });
+    const body = response.json();
+
+    expect(response.statusCode).toBe(200);
+    expect(body.llmEvidenceApplied).toBe(true);
+    expect(body.snapshot.evidence.map((item: { signal: string }) => item.signal)).toEqual(
+      expect.arrayContaining(["candidate_self_identification"])
+    );
+  });
+
+  test("classifier failure does not reject the original transcript event", async () => {
+    const app = await createHttpApp({
+      persistence: createNoopPersistence(),
+      transcriptClassifier: {
+        async classifyTranscript() {
+          throw new Error("mock classifier failed");
+        }
+      }
+    });
+    openApps.push(app);
+    await createMeeting(app);
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/meetings/meeting_1/events",
+      payload: {
+        type: "transcript_chunk",
+        participantId: "p_candidate",
+        timestampSec: 90,
+        text: "My name is Ritika Gupta, I am here for the interview.",
+        sourceEventId: "transcript_1"
+      }
+    });
+    const body = response.json();
+
+    expect(response.statusCode).toBe(200);
+    expect(body.eventAccepted).toBe(true);
+    expect(body.llmEvidenceApplied).toBe(false);
+    expect(body.llmWarning).toContain("mock classifier failed");
   });
 });

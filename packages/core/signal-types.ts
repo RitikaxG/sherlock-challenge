@@ -26,6 +26,8 @@ export type SignalKind =
   | "interviewer_question_prompt"
   | "interviewer_role_description"
   | "interviewer_control_language"
+  | "observer_or_admin_language"
+  | "no_clear_role_evidence"
   | "transcript_role_uncertain"
   | "candidate_interviewer_metadata_conflict"
   | "candidate_transcript_interviewer_metadata_conflict"

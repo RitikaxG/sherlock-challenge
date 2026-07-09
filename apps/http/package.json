@@ -18,6 +18,7 @@
     "@fastify/websocket": "^11.0.1",
     "@sherlock/core": "*",
     "@sherlock/db": "*",
+    "@sherlock/llm": "*",
     "@sherlock/realtime": "*",
     "@sherlock/shared": "*",
     "fastify": "^5.0.0"

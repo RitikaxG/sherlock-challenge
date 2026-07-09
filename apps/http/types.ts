@@ -19,6 +19,8 @@ export type EventIngestionResponse = {
   readonly meetingId: string;
   readonly eventAccepted: true;
   readonly snapshot: CandidateStateSnapshot;
+  readonly llmEvidenceApplied?: boolean;
+  readonly llmWarning?: string;
 };
 
 export type ReadinessResponse = {

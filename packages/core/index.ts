@@ -28,6 +28,7 @@ export {
 export { extractEventSignals } from "./event-signals.ts";
 export { extractBehaviorSignals } from "./behavior-signals.ts";
 export { extractTranscriptSignals } from "./transcript-signals.ts";
+export { extractLlmTranscriptEvidenceSignals } from "./llm-transcript-signals.ts";
 export { extractContradictionSignals } from "./contradiction-signals.ts";
 export {
   rankParticipants

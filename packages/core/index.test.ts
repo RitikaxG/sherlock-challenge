@@ -640,6 +640,207 @@ describe("@sherlock/core Phase 3 signal extraction", () => {
     );
   });
 
+  test("LLM candidate self-identification evidence can help candidate become likely", () => {
+    const baseState = createInitialSessionState(meeting, [
+      participant({ id: "p_candidate", displayName: "MacBook Pro" }),
+      participant({
+        id: "p_interviewer",
+        displayName: "Priya Sharma",
+        email: "priya@sherlock.ai"
+      })
+    ]);
+    const state = [
+      MeetingEventSchema.parse({
+        type: "speaking_activity",
+        participantId: "p_candidate",
+        timestampSec: 10,
+        durationSec: 300
+      }),
+      MeetingEventSchema.parse({
+        type: "llm_transcript_evidence",
+        participantId: "p_candidate",
+        timestampSec: 20,
+        role: "candidate_like",
+        confidence: 0.9,
+        selfIdentifiedName: "Ritika Gupta",
+        mentionedCandidateName: true,
+        shouldAffectCandidateIdentity: true,
+        uncertainty: [],
+        evidence: [
+          {
+            kind: "candidate_self_identification",
+            role: "candidate_like",
+            confidence: 0.9,
+            strength: "strong",
+            reason: "Speaker self-identified as the candidate."
+          },
+          {
+            kind: "candidate_name_spoken",
+            role: "candidate_like",
+            confidence: 0.86,
+            strength: "strong",
+            reason: "Speaker mentioned the candidate name."
+          },
+          {
+            kind: "candidate_experience_statement",
+            role: "candidate_like",
+            confidence: 0.72,
+            strength: "medium",
+            reason: "Speaker described candidate-relevant experience."
+          }
+        ]
+      })
+    ].reduce(applyMeetingEvent, baseState);
+
+    const snapshot = rankParticipants(state);
+
+    expect(snapshot.selectedCandidateId).toBe("p_candidate");
+    expect(snapshot.state).toBe("LIKELY_CANDIDATE");
+  });
+
+  test("LLM generic evidence alone does not select a candidate", () => {
+    const state = applyMeetingEvent(
+      createInitialSessionState(meeting, [
+        participant({ id: "p_candidate", displayName: "MacBook Pro" })
+      ]),
+      MeetingEventSchema.parse({
+        type: "llm_transcript_evidence",
+        participantId: "p_candidate",
+        timestampSec: 20,
+        role: "candidate_like",
+        confidence: 0.45,
+        selfIdentifiedName: null,
+        mentionedCandidateName: false,
+        shouldAffectCandidateIdentity: true,
+        uncertainty: ["Generic project language is weak role evidence."],
+        evidence: [
+          {
+            kind: "candidate_project_statement",
+            role: "candidate_like",
+            confidence: 0.45,
+            strength: "weak",
+            reason: "Project discussion is generic."
+          }
+        ]
+      })
+    );
+
+    const snapshot = rankParticipants(state);
+
+    expect(snapshot.selectedCandidateId).toBeNull();
+    expect(snapshot.state).toBe("INSUFFICIENT_DATA");
+  });
+
+  test("LLM interviewer evidence lowers participant score", () => {
+    const baseState = createInitialSessionState(meeting, [
+      participant({ id: "p_candidate", displayName: "MacBook Pro" }),
+      participant({ id: "p_prompt", displayName: "Guest" })
+    ]);
+    const state = applyMeetingEvent(
+      baseState,
+      MeetingEventSchema.parse({
+        type: "llm_transcript_evidence",
+        participantId: "p_prompt",
+        timestampSec: 20,
+        role: "interviewer_like",
+        confidence: 0.9,
+        selfIdentifiedName: null,
+        mentionedCandidateName: false,
+        shouldAffectCandidateIdentity: true,
+        uncertainty: [],
+        evidence: [
+          {
+            kind: "interviewer_question_prompt",
+            role: "interviewer_like",
+            confidence: 0.9,
+            strength: "strong",
+            reason: "Speaker prompted another participant."
+          }
+        ]
+      })
+    );
+    const promptScore = rankParticipants(state).participants.find(
+      (score) => score.participantId === "p_prompt"
+    );
+
+    expect(promptScore?.rawScore).toBeLessThan(0);
+  });
+
+  test("LLM uncertain evidence becomes uncertainty, not candidate proof", () => {
+    const state = applyMeetingEvent(
+      createInitialSessionState(meeting, [
+        participant({ id: "p_uncertain", displayName: "MacBook Pro" })
+      ]),
+      MeetingEventSchema.parse({
+        type: "llm_transcript_evidence",
+        participantId: "p_uncertain",
+        timestampSec: 20,
+        role: "uncertain",
+        confidence: 0.2,
+        selfIdentifiedName: null,
+        mentionedCandidateName: false,
+        shouldAffectCandidateIdentity: false,
+        uncertainty: ["No clear transcript role evidence."],
+        evidence: [
+          {
+            kind: "no_clear_role_evidence",
+            role: "uncertain",
+            confidence: 0.2,
+            strength: "weak",
+            reason: "No role evidence."
+          }
+        ]
+      })
+    );
+
+    const snapshot = rankParticipants(state);
+
+    expect(snapshot.selectedCandidateId).toBeNull();
+    expect(snapshot.uncertainty).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("No clear transcript role evidence")
+      ])
+    );
+  });
+
+  test("LLM evidence decays like transcript evidence", () => {
+    const baseState = createInitialSessionState(meeting, [
+      participant({ id: "p_candidate", displayName: "MacBook Pro" })
+    ]);
+    const state = [
+      MeetingEventSchema.parse({
+        type: "llm_transcript_evidence",
+        participantId: "p_candidate",
+        timestampSec: 20,
+        role: "candidate_like",
+        confidence: 0.9,
+        selfIdentifiedName: "Ritika Gupta",
+        mentionedCandidateName: true,
+        shouldAffectCandidateIdentity: true,
+        uncertainty: [],
+        evidence: [
+          {
+            kind: "candidate_self_identification",
+            role: "candidate_like",
+            confidence: 0.9,
+            strength: "strong",
+            reason: "Speaker self-identified."
+          }
+        ]
+      }),
+      MeetingEventSchema.parse({
+        type: "participant_joined",
+        participantId: "p_candidate",
+        timestampSec: 500
+      })
+    ].reduce(applyMeetingEvent, baseState);
+
+    const snapshot = rankParticipants(state);
+
+    expect(snapshot.selectedCandidateId).toBeNull();
+    expect(snapshot.state).toBe("INSUFFICIENT_DATA");
+  });
+
   test("snapshot includes evidence and uncertainty explanations", () => {
     const state = createInitialSessionState(meeting, [
       participant({ id: "p_candidate", displayName: "Ritika Gupta" }),

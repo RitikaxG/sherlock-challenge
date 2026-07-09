@@ -35,13 +35,21 @@ These rules apply to future Codex work in this repository.
 
 ## Current Phase Guardrail
 
-Phase 6 is Fastify ingestion and WebSocket broadcast in `apps/http`.
+Phase 7 is the optional Gemini LLM transcript classifier evidence package.
 
 Do not implement yet:
 
 - dashboard
-- LLM logic/provider
 - raw audio recording, real meeting-platform integration, CV/person detection, voice biometrics, or fraud verdicts
+
+For `packages/llm`:
+
+- It owns transcript role evidence extraction only.
+- It may call Gemini from `gemini-provider.ts`.
+- It must read secrets from environment variables such as `GEMINI_API_KEY`; never commit API keys.
+- It must validate model JSON output with Zod before producing shared events.
+- It must not select the final candidate or compute candidate identity.
+- It must not import apps, DB, React, Fastify, WebSocket, realtime, or core unless a shared type compatibility issue absolutely requires it.
 
 For `apps/http`:
 
@@ -50,6 +58,7 @@ For `apps/http`:
 - It must call `packages/core` for identity decisions through the session store; it must not implement scoring, transcript interpretation, contradiction detection, confidence, or explanation logic.
 - It may broadcast `candidate_state_updated` through `packages/realtime`.
 - It should keep DB persistence optional so local tests do not require Postgres.
+- It may optionally invoke `packages/llm`, but prompt/provider logic must stay in `packages/llm`.
 
 For `packages/eval`:
 
@@ -83,6 +92,7 @@ When package-specific commands are added, prefer Bun workspace filters, for exam
 
 ```sh
 bun --filter '@sherlock/core' test
+bun --filter '@sherlock/llm' test
 bun --filter '@sherlock/eval' test
 bun --filter '@sherlock/eval' eval
 bun --filter '@sherlock/speech' test

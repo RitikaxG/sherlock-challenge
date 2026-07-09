@@ -9,6 +9,10 @@ import {
   broadcastCandidateStateUpdated,
   type MeetingConnectionRegistry
 } from "@sherlock/realtime";
+import {
+  createLlmTranscriptEvidenceEvent,
+  type TranscriptClassifierProvider
+} from "@sherlock/llm";
 
 import { shouldBroadcastSnapshot } from "./broadcast-policy.ts";
 import {
@@ -38,6 +42,7 @@ export async function registerRoutes(
     sessionStore: MeetingSessionStore;
     persistence: PersistenceAdapter;
     realtimeRegistry: MeetingConnectionRegistry;
+    transcriptClassifier?: TranscriptClassifierProvider;
   }
 ) {
   app.get("/health", async () => ({
@@ -103,6 +108,9 @@ export async function registerRoutes(
       const event = MeetingEventSchema.parse(request.body);
       const previous = options.sessionStore.getSnapshot(meetingId);
       const snapshot = options.sessionStore.appendMeetingEvent(meetingId, event);
+      let latestSnapshot = snapshot;
+      let llmEvidenceApplied = false;
+      let llmWarning: string | undefined;
 
       try {
         await options.persistence.persistEvent(meetingId, event, snapshot);
@@ -114,10 +122,70 @@ export async function registerRoutes(
         broadcastCandidateStateUpdated(options.realtimeRegistry, snapshot);
       }
 
+      if (event.type === "transcript_chunk" && options.transcriptClassifier) {
+        try {
+          const session = options.sessionStore.requireMeetingSession(meetingId);
+          const classification =
+            await options.transcriptClassifier.classifyTranscript({
+              meetingId,
+              participantId: event.participantId,
+              candidateName: session.meeting.candidateName,
+              candidateEmail: session.meeting.candidateEmail,
+              interviewerNames: session.meeting.interviewerNames,
+              interviewerEmails: session.meeting.interviewerEmails,
+              companyDomains: session.meeting.companyDomains,
+              transcriptText: event.text,
+              timestampSec: event.timestampSec,
+              sourceEventId: event.sourceEventId,
+              speakerConfidence: event.speakerConfidence
+            });
+          const llmEvent = createLlmTranscriptEvidenceEvent({
+            meetingId,
+            participantId: event.participantId,
+            timestampSec: event.timestampSec,
+            transcriptSourceEventId: event.sourceEventId,
+            sourceEventId: `llm_${event.sourceEventId ?? `${event.participantId}_${event.timestampSec}`}`,
+            classification
+          });
+          const beforeLlm = options.sessionStore.getSnapshot(meetingId);
+          latestSnapshot = options.sessionStore.appendMeetingEvent(
+            meetingId,
+            llmEvent
+          );
+          llmEvidenceApplied = true;
+
+          try {
+            await options.persistence.persistEvent(
+              meetingId,
+              llmEvent,
+              latestSnapshot
+            );
+          } catch (error) {
+            request.log.warn({ error }, "Optional LLM event persistence failed.");
+          }
+
+          if (shouldBroadcastSnapshot(beforeLlm, latestSnapshot)) {
+            broadcastCandidateStateUpdated(
+              options.realtimeRegistry,
+              latestSnapshot
+            );
+          }
+        } catch (error) {
+          llmWarning =
+            error instanceof Error
+              ? error.message
+              : "Transcript classifier failed.";
+          request.log.warn({ error }, "Optional transcript classification failed.");
+        }
+      }
+
       return {
         meetingId,
         eventAccepted: true,
-        snapshot
+        snapshot: latestSnapshot,
+        ...(options.transcriptClassifier
+          ? { llmEvidenceApplied, ...(llmWarning ? { llmWarning } : {}) }
+          : {})
       };
     } catch (error) {
       if (error instanceof MeetingSessionNotFoundError) {

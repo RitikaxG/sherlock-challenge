@@ -1,0 +1,71 @@
+{
+  "id": "18_llm_candidate_self_identification",
+  "title": "LLM evidence identifies candidate-like self-identification",
+  "meeting": {
+    "id": "scenario_18",
+    "candidateName": "Ritika Gupta",
+    "candidateEmail": "ritika@example.com",
+    "interviewerNames": ["Priya Sharma"],
+    "interviewerEmails": ["priya@sherlock.ai"],
+    "companyDomains": ["sherlock.ai"]
+  },
+  "participants": [
+    { "id": "p_candidate", "meetingId": "scenario_18", "displayName": "MacBook Pro" },
+    {
+      "id": "p_interviewer",
+      "meetingId": "scenario_18",
+      "displayName": "Priya Sharma",
+      "email": "priya@sherlock.ai",
+      "isKnownInterviewerHint": true
+    }
+  ],
+  "events": [
+    { "type": "participant_joined", "participantId": "p_interviewer", "timestampSec": 0 },
+    { "type": "participant_joined", "participantId": "p_candidate", "timestampSec": 10 },
+    { "type": "speaking_activity", "participantId": "p_candidate", "timestampSec": 20, "durationSec": 300 },
+    {
+      "type": "llm_transcript_evidence",
+      "participantId": "p_candidate",
+      "timestampSec": 30,
+      "source": "gemini_transcript_classifier",
+      "sourceEventId": "scenario_18_llm_1",
+      "transcriptSourceEventId": "scenario_18_transcript_1",
+      "role": "candidate_like",
+      "confidence": 0.9,
+      "selfIdentifiedName": "Ritika Gupta",
+      "mentionedCandidateName": true,
+      "shouldAffectCandidateIdentity": true,
+      "uncertainty": [],
+      "evidence": [
+        {
+          "kind": "candidate_self_identification",
+          "role": "candidate_like",
+          "confidence": 0.9,
+          "strength": "strong",
+          "matchedText": "My name is Ritika Gupta",
+          "reason": "Speaker explicitly self-identified with candidate name."
+        },
+        {
+          "kind": "candidate_name_spoken",
+          "role": "candidate_like",
+          "confidence": 0.86,
+          "strength": "strong",
+          "matchedText": "Ritika Gupta",
+          "reason": "Speaker mentioned the candidate name."
+        },
+        {
+          "kind": "candidate_experience_statement",
+          "role": "candidate_like",
+          "confidence": 0.72,
+          "strength": "medium",
+          "matchedText": "backend system",
+          "reason": "Speaker described candidate-relevant project experience."
+        }
+      ]
+    }
+  ],
+  "expected": {
+    "candidateParticipantId": "p_candidate",
+    "finalState": "LIKELY_CANDIDATE"
+  }
+}

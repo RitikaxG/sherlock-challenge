@@ -13,7 +13,7 @@ describe("@sherlock/eval scenario harness", () => {
   it("loads and validates the root scenario fixtures", async () => {
     const scenarios = await loadScenarios();
 
-    expect(scenarios).toHaveLength(17);
+    expect(scenarios).toHaveLength(20);
     expect(scenarios.map((scenario) => scenario.id)).toContain(
       "08_two_unknown_ambiguous"
     );
@@ -81,14 +81,14 @@ describe("@sherlock/eval scenario harness", () => {
     const summary = evaluateScenarios(await loadScenarios());
     const report = formatEvaluationReport(summary);
 
-    expect(summary.aggregate.totalScenarios).toBe(17);
-    expect(summary.aggregate.passedScenarios).toBe(17);
+    expect(summary.aggregate.totalScenarios).toBe(20);
+    expect(summary.aggregate.passedScenarios).toBe(20);
     expect(summary.aggregate.averageFinalConfidence).toBeGreaterThan(0);
     expect(summary.aggregate.averageEvidenceCount).toBeGreaterThan(0);
     expect(summary.results[0]?.evidenceCount).toBeGreaterThan(0);
     expect(summary.results[0]?.uncertaintyCount).toBeGreaterThanOrEqual(0);
     expect(report).toContain("Sherlock Scenario Evaluation");
-    expect(report).toContain("17/17 passed");
+    expect(report).toContain("20/20 passed");
     expect(report).toContain("Avg final confidence");
     expect(report).toContain("evidence");
   });

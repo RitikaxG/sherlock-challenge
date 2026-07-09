@@ -10,6 +10,45 @@ export const CandidateDecisionStateSchema = z.enum([
 
 export const CandidateStateSchema = CandidateDecisionStateSchema;
 
+export const TranscriptRoleSchema = z.enum([
+  "candidate_like",
+  "interviewer_like",
+  "observer_like",
+  "uncertain"
+]);
+
+export const TranscriptRoleEvidenceKindSchema = z.enum([
+  "candidate_self_identification",
+  "candidate_name_spoken",
+  "candidate_experience_statement",
+  "candidate_project_statement",
+  "interviewer_question_prompt",
+  "interviewer_role_description",
+  "interviewer_control_language",
+  "observer_or_admin_language",
+  "no_clear_role_evidence"
+]);
+
+export const TranscriptRoleEvidenceItemSchema = z.object({
+  kind: TranscriptRoleEvidenceKindSchema,
+  role: TranscriptRoleSchema,
+  confidence: z.number().min(0).max(1),
+  strength: z.enum(["weak", "medium", "strong"]),
+  matchedText: z.string().min(1).optional(),
+  reason: z.string().min(1)
+});
+
+export const TranscriptRoleEvidencePayloadSchema = z.object({
+  transcriptSourceEventId: z.string().min(1).optional(),
+  role: TranscriptRoleSchema,
+  confidence: z.number().min(0).max(1),
+  selfIdentifiedName: z.string().min(1).nullable(),
+  mentionedCandidateName: z.boolean(),
+  evidence: z.array(TranscriptRoleEvidenceItemSchema),
+  uncertainty: z.array(z.string()),
+  shouldAffectCandidateIdentity: z.boolean()
+});
+
 export const MeetingSchema = z.object({
   id: z.string().min(1),
   candidateName: z.string().min(1),
@@ -73,7 +112,10 @@ export const MeetingEventSchema = z.discriminatedUnion("type", [
     type: z.literal("transcript_chunk"),
     text: z.string().min(1),
     isFinal: z.boolean().optional()
-  }).merge(SpeechEventMetadataSchema)
+  }).merge(SpeechEventMetadataSchema),
+  BaseMeetingEventSchema.extend({
+    type: z.literal("llm_transcript_evidence")
+  }).merge(TranscriptRoleEvidencePayloadSchema)
 ]).superRefine((event, context) => {
   if (
     "startSec" in event &&
@@ -139,6 +181,16 @@ export type CandidateDecisionState = z.infer<
   typeof CandidateDecisionStateSchema
 >;
 export type CandidateState = z.infer<typeof CandidateStateSchema>;
+export type TranscriptRole = z.infer<typeof TranscriptRoleSchema>;
+export type TranscriptRoleEvidenceKind = z.infer<
+  typeof TranscriptRoleEvidenceKindSchema
+>;
+export type TranscriptRoleEvidenceItem = z.infer<
+  typeof TranscriptRoleEvidenceItemSchema
+>;
+export type TranscriptRoleEvidencePayload = z.infer<
+  typeof TranscriptRoleEvidencePayloadSchema
+>;
 export type Meeting = z.infer<typeof MeetingSchema>;
 export type Participant = z.infer<typeof ParticipantSchema>;
 export type MeetingEvent = z.infer<typeof MeetingEventSchema>;

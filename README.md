@@ -23,7 +23,7 @@ The target architecture is a Bun/Turborepo monorepo with pure identity logic at 
 - `packages/core`: pure session state, deterministic signal extraction, fusion scoring, confidence/state decisions, ambiguity handling, and explanations.
 - `packages/db`: Prisma/Postgres persistence for meetings, participants, events, score snapshots, and scenario results.
 - `packages/llm`: structured transcript role evidence adapters with deterministic fallback rules.
-- `packages/realtime`: reusable WebSocket infrastructure for connection registry, broadcaster, meeting subscriptions, and typed broadcast helpers.
+- `packages/realtime`: WebSocket subscription registry and typed broadcast helpers.
 - `packages/eval`: scenario replay, metrics, expected-vs-actual checks, and CLI reporting.
 - `packages/speech`: speech metadata collector scaffolding that maps upstream speech/transcript observations into shared meeting events.
 - `apps/http`: deployable backend server that composes Fastify HTTP routes and a WebSocket endpoint, calls packages, optionally persists snapshots, and broadcasts live candidate state.
@@ -44,7 +44,7 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for package responsibilities, event flo
 | 5 | Scenario simulator and evaluation harness | Done |
 | 5.5 | Core hardening, transcript specificity, temporal stability, evidence decay, and speech metadata scaffolding | Done |
 | 6 | Fastify ingestion and WebSocket broadcast | Done |
-| 7 | Optional LLM transcript classifier evidence package | Later |
+| 7 | Optional LLM transcript classifier evidence package | Done |
 | 8 | React real-time dashboard | Later |
 | 9 | Edge-case hardening and evaluation report | Later |
 | 10 | Submission polish, demo script, and reproducibility pass | Later |
@@ -59,17 +59,14 @@ This repository currently starts from a Turborepo Tailwind template and contains
 - `packages/shared`: Zod schemas and TypeScript contracts.
 - `packages/core`: pure identity engine with deterministic signal extraction and fusion decision snapshots.
 - `packages/db`: Prisma/Postgres schema, client helper, and repository plumbing.
-- `packages/realtime`: placeholder realtime infrastructure package.
+- `packages/realtime`: reusable realtime registry and broadcaster helpers.
 - `packages/eval`: scenario replay, metrics, expected-vs-actual checks, and CLI reporting.
 - `packages/speech`: speech metadata mapping, event factory, collector, and optional injected HTTP sink.
+- `packages/llm`: Gemini-backed structured transcript role evidence extraction with mock-provider tests.
 - `packages/eslint-config`: shared ESLint configuration.
 - `packages/typescript-config`: shared TypeScript configuration.
 - `packages/tailwind-config`: shared Tailwind styles.
 - `docs/implementation-blueprint.pdf` and `docs/implementation-blueprint.docx`: implementation blueprint.
-
-Expected target packages/apps that are not present yet:
-
-- `packages/llm`
 
 ## Commands
 
@@ -92,6 +89,8 @@ bun --filter http dev
 bun --filter '@sherlock/shared' check-types
 bun --filter '@sherlock/core' check-types
 bun --filter '@sherlock/core' test
+bun --filter '@sherlock/llm' check-types
+bun --filter '@sherlock/llm' test
 bun --filter '@sherlock/realtime' check-types
 bun --filter '@sherlock/eval' check-types
 bun --filter '@sherlock/eval' test
@@ -104,6 +103,14 @@ bun --filter '@sherlock/db' check-types
 bun --filter '@sherlock/db' test
 bun --filter @repo/ui run check-types
 ```
+
+Optional real Gemini smoke test:
+
+```sh
+GEMINI_API_KEY=... bun --filter '@sherlock/llm' test:integration
+```
+
+Gemini is used only to extract structured transcript role evidence. The LLM does not select the candidate; `packages/core` remains the deterministic final decision-maker.
 
 Local Postgres:
 
