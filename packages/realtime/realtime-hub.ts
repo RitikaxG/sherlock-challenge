@@ -1,9 +1,23 @@
-import type { Broadcaster } from "./broadcaster.js";
-import type { ConnectionRegistry } from "./connection-registry.js";
-import type { MeetingSubscriptions } from "./meeting-subscriptions.js";
+import { broadcastCandidateStateUpdated } from "./broadcaster.ts";
+import {
+  createMeetingConnectionRegistry,
+  type MeetingConnectionRegistry,
+  type RealtimeClient
+} from "./connection-registry.ts";
 
-export type RealtimeHub<TConnection = unknown> = {
-  readonly broadcaster: Broadcaster;
-  readonly connections: ConnectionRegistry<TConnection>;
-  readonly meetingSubscriptions: MeetingSubscriptions;
+export type RealtimeHub = {
+  readonly registry: MeetingConnectionRegistry;
+  subscribe(meetingId: string, client: RealtimeClient): () => void;
+  broadcastCandidateStateUpdated: typeof broadcastCandidateStateUpdated;
 };
+
+export function createRealtimeHub(): RealtimeHub {
+  const registry = createMeetingConnectionRegistry();
+
+  return {
+    registry,
+    subscribe: registry.subscribe,
+    broadcastCandidateStateUpdated: (meetingRegistry, snapshot) =>
+      broadcastCandidateStateUpdated(meetingRegistry, snapshot)
+  };
+}

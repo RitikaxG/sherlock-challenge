@@ -8,12 +8,12 @@ Sherlock's Candidate Identity Fusion Engine is designed as a monorepo with pure 
 | --- | --- | --- |
 | `apps/web` | Present as a Next.js starter app | Demo dashboard for scenario replay, live participant rankings, confidence state, evidence, uncertainty, and evaluation results. |
 | `apps/docs` | Removed | Not part of the current target architecture. |
-| `apps/http` | Present as a placeholder package | Deployable backend transport/composition layer. It composes HTTP routes and the WebSocket endpoint in one server, validates inputs, calls packages, persists snapshots, and broadcasts candidate-state updates. |
+| `apps/http` | Present with Fastify routes and WebSocket endpoint | Deployable backend transport/composition layer. It composes HTTP routes and the WebSocket endpoint in one server, validates inputs, calls packages, persists snapshots when configured, and broadcasts candidate-state updates. |
 | `packages/core` | Present with fusion engine | Pure identity engine: session state, deterministic signals, weighted fusion scoring, confidence/state decisions, ambiguity handling, and explanations. |
 | `packages/shared` | Present | Zod schemas and TypeScript contracts for meetings, participants, events, evidence, candidate state, WebSocket messages, and scenario files. |
 | `packages/db` | Present | Prisma schema, migrations, typed client helper, and repository functions for meetings, participants, events, score snapshots, and scenario results. |
 | `packages/llm` | Missing | Provider interface and adapters that convert transcript chunks into structured role evidence. It must not make final candidate decisions. |
-| `packages/realtime` | Present as a placeholder package | Reusable realtime infrastructure only: connection registry, broadcaster, meeting subscriptions, typed broadcast helpers. It is not a deployable server. |
+| `packages/realtime` | Present with registry and broadcaster helpers | Reusable realtime infrastructure only: connection registry, broadcaster, meeting subscriptions, typed broadcast helpers. It is not a deployable server. |
 | `packages/eval` | Present with scenario harness | Scenario replay, expected-vs-actual checks, evaluation metrics, and CLI reporting. |
 | `packages/speech` | Present with collector scaffolding | Converts structured upstream speech activity and transcript observations into shared meeting events. It does not record raw audio or compute candidate identity. |
 | `packages/ui` | Present as shared React/Tailwind components | Shared visual components used by web surfaces, if helpful. |
@@ -106,7 +106,6 @@ flowchart LR
   HTTP --> DB["packages/db"]
   HTTP --> Realtime["packages/realtime"]
   HTTP --> LLM["packages/llm"]
-  HTTP --> Speech["packages/speech"]
   Web["apps/web"] --> Shared
   Web --> UI["packages/ui"]
   Eval["packages/eval"] --> Shared

@@ -35,15 +35,21 @@ These rules apply to future Codex work in this repository.
 
 ## Current Phase Guardrail
 
-Phase 5.5 is core hardening, transcript specificity, temporal stability, evidence decay, and speech metadata collector scaffolding only.
+Phase 6 is Fastify ingestion and WebSocket broadcast in `apps/http`.
 
 Do not implement yet:
 
-- WebSocket behavior
-- Fastify route behavior
 - dashboard
 - LLM logic/provider
 - raw audio recording, real meeting-platform integration, CV/person detection, voice biometrics, or fraud verdicts
+
+For `apps/http`:
+
+- It may orchestrate route validation, in-memory session state, optional DB persistence, and realtime broadcast.
+- It may receive `MeetingEvent` objects from meeting bots, speech collectors, fixtures, or future integrations.
+- It must call `packages/core` for identity decisions through the session store; it must not implement scoring, transcript interpretation, contradiction detection, confidence, or explanation logic.
+- It may broadcast `candidate_state_updated` through `packages/realtime`.
+- It should keep DB persistence optional so local tests do not require Postgres.
 
 For `packages/eval`:
 
@@ -80,6 +86,7 @@ bun --filter '@sherlock/core' test
 bun --filter '@sherlock/eval' test
 bun --filter '@sherlock/eval' eval
 bun --filter '@sherlock/speech' test
+bun --filter http test
 ```
 
 ## Testing Expectations

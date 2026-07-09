@@ -3,20 +3,29 @@
   "version": "0.0.0",
   "type": "module",
   "private": true,
+  "exports": {
+    ".": "./index.ts"
+  },
   "scripts": {
     "build": "tsc --noEmit",
     "check-types": "tsc --noEmit",
-    "dev": "tsc --watch",
+    "dev": "bun --watch ./server.ts",
+    "start": "bun ./server.ts",
+    "test": "vitest run",
     "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
+    "@fastify/websocket": "^11.0.1",
     "@sherlock/core": "*",
+    "@sherlock/db": "*",
+    "@sherlock/realtime": "*",
     "@sherlock/shared": "*",
-    "@sherlock/realtime": "*"
+    "fastify": "^5.0.0"
   },
   "devDependencies": {
     "@repo/typescript-config": "*",
     "@types/node": "^22.15.30",
-    "typescript": "5.9.2"
+    "typescript": "5.9.2",
+    "vitest": "^4.0.0"
   }
 }
