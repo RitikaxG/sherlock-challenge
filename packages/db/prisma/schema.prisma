@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -10,4 +5,93 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+model Meeting {
+  id                String           @id
+  candidateName     String
+  candidateEmail    String?
+  scheduledStart    DateTime?
+  interviewerNames  Json
+  interviewerEmails Json
+  companyDomains    Json
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  participants      Participant[]
+  events            MeetingEvent[]
+  scoreSnapshots    ScoreSnapshot[]
+  scenarioResults   ScenarioResult[]
+}
+
+model Participant {
+  id                     String          @id
+  meetingId              String
+  displayName            String
+  email                  String?
+  currentName            String?
+  joinedAtSec            Float?
+  leftAtSec              Float?
+  isKnownInterviewerHint Boolean         @default(false)
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+  meeting                Meeting         @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  events                 MeetingEvent[]
+  scoreSnapshots         ScoreSnapshot[]
+
+  @@index([meetingId])
+}
+
+model MeetingEvent {
+  id            String       @id @default(cuid())
+  meetingId     String
+  participantId String?
+  type          String
+  timestampSec  Float
+  payload       Json
+  createdAt     DateTime     @default(now())
+  meeting       Meeting      @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  participant   Participant? @relation(fields: [participantId], references: [id], onDelete: SetNull)
+
+  @@index([meetingId])
+  @@index([participantId])
+  @@index([timestampSec])
+  @@index([meetingId, timestampSec])
+  @@index([meetingId, participantId, timestampSec])
+}
+
+model ScoreSnapshot {
+  id                  String       @id @default(cuid())
+  meetingId           String
+  participantId       String?
+  selectedCandidateId String?
+  confidence          Float
+  state               String
+  participants        Json
+  evidence            Json
+  uncertainty         Json
+  rawSnapshot         Json
+  createdAt           DateTime     @default(now())
+  meeting             Meeting      @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  participant         Participant? @relation(fields: [participantId], references: [id], onDelete: SetNull)
+
+  @@index([meetingId])
+  @@index([participantId])
+  @@index([createdAt])
+  @@index([meetingId, createdAt])
+  @@index([meetingId, participantId, createdAt])
+}
+
+model ScenarioResult {
+  id                   String   @id @default(cuid())
+  scenarioId           String
+  meetingId            String?
+  expectedCandidateId  String?
+  predictedCandidateId String?
+  passed               Boolean
+  metrics              Json
+  finalSnapshot        Json?
+  createdAt            DateTime @default(now())
+  meeting              Meeting? @relation(fields: [meetingId], references: [id], onDelete: SetNull)
+
+  @@index([scenarioId])
 }

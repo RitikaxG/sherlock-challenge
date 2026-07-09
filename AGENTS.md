@@ -27,13 +27,14 @@ These rules apply to future Codex work in this repository.
 - `packages/eval` owns scenario replay, metrics, expected-vs-actual checks, and CLI reporting.
 - `packages/llm` owns transcript evidence extraction only. It must not directly select the candidate.
 - `packages/db` owns Prisma schema, migrations, typed DB client, and repositories.
+- `packages/db` stores events, evidence, score snapshots, and scenario results, but it must not compute candidate identity.
 - `packages/shared` owns shared Zod schemas and TypeScript contracts.
 - `apps/web` owns the dashboard UI.
 - LLMs may contribute structured transcript evidence, but the deterministic fusion engine remains the final decision-maker.
 
 ## Current Phase Guardrail
 
-Phase 1B is workspace contract alignment only.
+Phase 2 is Prisma/Postgres persistence only.
 
 Do not implement yet:
 
@@ -41,7 +42,6 @@ Do not implement yet:
 - signal extractors
 - WebSocket behavior
 - Fastify route behavior
-- DB repositories
 - dashboard
 - scenario evaluator behavior
 - LLM logic/provider

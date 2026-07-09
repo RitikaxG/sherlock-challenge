@@ -13,7 +13,7 @@ Interview fraud detectors are only useful when Sherlock knows which meeting part
 - No heavy autonomous multi-agent framework.
 - No committed secrets, API keys, or real candidate data.
 - No black-box LLM final decision. LLM output can add transcript evidence only.
-- No real scoring engine, WebSocket behavior, dashboard, evaluator behavior, DB repositories, or LLM logic in Phase 1.
+- No real scoring engine, WebSocket behavior, dashboard, evaluator behavior, or LLM logic in the current backend-foundation phase.
 
 ## Architecture Overview
 
@@ -36,8 +36,8 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for package responsibilities, event flo
 | Phase | Goal | Status |
 | --- | --- | --- |
 | 0 | Product scope, thesis, acceptance criteria, architecture docs | Done |
-| 1 | Bun/Turborepo workspace contracts and package boundary alignment | Structurally complete; pending Bun verification |
-| 2 | Prisma/Postgres persistence package | Later |
+| 1 | Bun/Turborepo workspace contracts and package boundary alignment | Done |
+| 2 | Prisma/Postgres persistence package | In progress |
 | 3 | Pure core domain model and deterministic signal extractors | Later |
 | 4 | Fusion engine, confidence, ambiguity, and explanations | Later |
 | 5 | Scenario simulator and evaluation harness | Later |
@@ -56,7 +56,7 @@ This repository currently starts from a Turborepo Tailwind template and contains
 - `packages/ui`: shared React/Tailwind component package.
 - `packages/shared`: Zod schemas and TypeScript contracts.
 - `packages/core`: pure placeholder identity-engine package.
-- `packages/db`: minimal Prisma package with generated client files and a placeholder schema.
+- `packages/db`: Prisma/Postgres schema, client helper, and repository plumbing.
 - `packages/realtime`: placeholder realtime infrastructure package.
 - `packages/eval`: placeholder evaluation package.
 - `packages/eslint-config`: shared ESLint configuration.
@@ -68,7 +68,6 @@ Expected target packages/apps that are not present yet:
 
 - `packages/llm`
 - `scenarios`
-- `docker-compose.yml`
 
 ## Commands
 
@@ -91,15 +90,19 @@ bun --filter '@sherlock/core' check-types
 bun --filter '@sherlock/core' test
 bun --filter @sherlock/realtime run check-types
 bun --filter @sherlock/eval run check-types
+bun --filter '@sherlock/db' db:generate
+bun --filter '@sherlock/db' db:migrate
+bun --filter '@sherlock/db' check-types
+bun --filter '@sherlock/db' test
 bun --filter @repo/ui run check-types
 ```
 
-Later package-level examples:
+Local Postgres:
 
 ```sh
-bun --filter @sherlock/db run test
+docker compose up -d
 ```
 
 ## First Implementation Direction
 
-The recommended next phase is Phase 2 DB work after Bun is available and `bun install`, `bun run check-types`, `bun run build`, and `bun --filter '@sherlock/core' test` pass locally.
+The recommended next phase after the DB commands pass is Phase 3: implement pure deterministic signal extractors in `packages/core` without importing `packages/db`.

@@ -1,19 +1,32 @@
 {
-  "name": "db",
-  "module": "index.ts",
+  "name": "@sherlock/db",
+  "version": "0.0.0",
   "type": "module",
   "private": true,
-  "devDependencies": {
-    "@types/bun": "latest",
-    "@types/pg": "^8.20.0",
-    "prisma": "^7.8.0"
+  "exports": {
+    ".": "./index.ts",
+    "./client": "./client.ts",
+    "./repositories": "./repositories.ts"
   },
-  "peerDependencies": {
-    "typescript": "^5"
+  "scripts": {
+    "build": "tsc --noEmit",
+    "check-types": "tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "test": "vitest run"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "pg": "^8.22.0"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "*",
+    "@types/node": "^22.15.30",
+    "@types/pg": "^8.20.0",
+    "prisma": "^7.8.0",
+    "typescript": "5.9.2",
+    "vitest": "^4.0.0"
   }
 }

@@ -11,7 +11,7 @@ Sherlock's Candidate Identity Fusion Engine is designed as a monorepo with pure 
 | `apps/http` | Present as a placeholder package | Deployable backend transport/composition layer. It composes HTTP routes and the WebSocket endpoint in one server, validates inputs, calls packages, persists snapshots, and broadcasts candidate-state updates. |
 | `packages/core` | Present as a pure placeholder package | Pure identity engine: metadata, behavior, transcript signal handling, fusion scoring, confidence state machine, and explanations. Current functions return deterministic placeholder output only. |
 | `packages/shared` | Present | Zod schemas and TypeScript contracts for meetings, participants, events, evidence, candidate state, WebSocket messages, and scenario files. |
-| `packages/db` | Present, minimal Prisma package | Prisma schema, migrations, typed client, and repository functions for meetings, participants, events, score snapshots, and scenario results. |
+| `packages/db` | Present | Prisma schema, migrations, typed client helper, and repository functions for meetings, participants, events, score snapshots, and scenario results. |
 | `packages/llm` | Missing | Provider interface and adapters that convert transcript chunks into structured role evidence. It must not make final candidate decisions. |
 | `packages/realtime` | Present as a placeholder package | Reusable realtime infrastructure only: connection registry, broadcaster, meeting subscriptions, typed broadcast helpers. It is not a deployable server. |
 | `packages/eval` | Present as a placeholder package | Scenario replay, expected-vs-actual checks, evaluation metrics, and CLI reporting. |
@@ -46,6 +46,7 @@ Forbidden dependency direction:
 - `packages/core` must not import Fastify, Prisma, WebSocket libraries, React, OpenAI/Gemini SDKs, server-specific APIs, filesystem state, network calls, or environment variables.
 - `packages/realtime` must not become a separate deployable backend.
 - `packages/llm` must not select the candidate directly.
+- `packages/db` must persist shared-shaped records and snapshots, not compute candidate identity.
 
 ## Event Flow
 
