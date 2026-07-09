@@ -13,7 +13,7 @@ Interview fraud detectors are only useful when Sherlock knows which meeting part
 - No heavy autonomous multi-agent framework.
 - No committed secrets, API keys, or real candidate data.
 - No black-box LLM final decision. LLM output can add transcript evidence only.
-- No dashboard, real speech/audio recording, CV, fraud verdicts, or LLM provider logic in the current live-backend phase.
+- No real speech/audio recording, CV, human identity verification, or fraud verdicts in the dashboard phase.
 
 ## Architecture Overview
 
@@ -45,7 +45,7 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for package responsibilities, event flo
 | 5.5 | Core hardening, transcript specificity, temporal stability, evidence decay, and speech metadata scaffolding | Done |
 | 6 | Fastify ingestion and WebSocket broadcast | Done |
 | 7 | Optional LLM transcript classifier evidence package | Done |
-| 8 | React real-time dashboard | Later |
+| 8 | React real-time dashboard and demo experience | Done |
 | 9 | Edge-case hardening and evaluation report | Later |
 | 10 | Submission polish, demo script, and reproducibility pass | Later |
 
@@ -53,7 +53,7 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for package responsibilities, event flo
 
 This repository currently starts from a Turborepo Tailwind template and contains:
 
-- `apps/web`: Next.js starter app.
+- `apps/web`: Next.js real-time interview dashboard for scenario replay, candidate decision display, evidence, uncertainty, and demo narration.
 - `apps/http`: Fastify ingestion and WebSocket composition app.
 - `packages/ui`: shared React/Tailwind component package.
 - `packages/shared`: Zod schemas and TypeScript contracts.
@@ -83,6 +83,9 @@ Useful package-level commands currently available:
 
 ```sh
 bun --filter web dev
+bun --filter web check-types
+bun --filter web build
+bun --filter web test
 bun --filter http check-types
 bun --filter http test
 bun --filter http dev
@@ -112,6 +115,26 @@ GEMINI_API_KEY=... bun --filter '@sherlock/llm' test:integration
 
 Gemini is used only to extract structured transcript role evidence. The LLM does not select the candidate; `packages/core` remains the deterministic final decision-maker.
 
+Dashboard env vars:
+
+```env
+NEXT_PUBLIC_SHERLOCK_API_URL=http://localhost:3001
+NEXT_PUBLIC_ENABLE_DEMO_MODE=true
+SHERLOCK_WEB_ORIGIN=http://localhost:3000
+```
+
+Run the live demo locally:
+
+```sh
+# terminal 1
+bun --filter http dev
+
+# terminal 2
+bun --filter web dev
+```
+
+Open `http://localhost:3000`, choose a scenario, and start replay. The web app creates a meeting through `apps/http`, posts fixture events, listens for `candidate_state_updated` over WebSocket, and falls back to snapshot polling if the socket is unavailable. If the backend is unavailable and demo mode is enabled, the UI shows a clear local visual demo warning instead of pretending it is connected.
+
 Local Postgres:
 
 ```sh
@@ -134,4 +157,4 @@ packages/core rankParticipants
 candidate_state_updated WebSocket broadcast
 ```
 
-The recommended next phase is Phase 7 optional LLM transcript classifier or Phase 8 dashboard work. The engine identifies the candidate participant stream; it does not yet verify the human identity of that stream or make cheating/fraud verdicts.
+The recommended next phase is Phase 9 evaluation report and demo polish. The engine identifies the candidate participant stream; it does not verify the human identity of that stream or make cheating/fraud verdicts.

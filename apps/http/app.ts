@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import cors from "@fastify/cors";
 import {
   createMeetingConnectionRegistry,
   type MeetingConnectionRegistry
@@ -24,11 +25,15 @@ export type CreateHttpAppOptions = {
 
 export async function createHttpApp(options: CreateHttpAppOptions = {}) {
   const app = Fastify({ logger: options.logger ?? false });
+  const webOrigin = process.env.SHERLOCK_WEB_ORIGIN ?? "http://localhost:3000";
   const sessionStore = options.sessionStore ?? createMeetingSessionStore();
   const persistence = options.persistence ?? createOptionalPersistence();
   const realtimeRegistry =
     options.realtimeRegistry ?? createMeetingConnectionRegistry();
 
+  await app.register(cors, {
+    origin: webOrigin
+  });
   await registerWebsocket(app, { sessionStore, realtimeRegistry });
   await registerRoutes(app, {
     sessionStore,

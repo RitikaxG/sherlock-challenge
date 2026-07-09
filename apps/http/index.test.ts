@@ -81,6 +81,23 @@ describe("apps/http", () => {
     });
   });
 
+  test("allows the local web dashboard origin through CORS", async () => {
+    const app = await testApp();
+    const response = await app.inject({
+      method: "OPTIONS",
+      url: "/meetings",
+      headers: {
+        origin: "http://localhost:3000",
+        "access-control-request-method": "POST"
+      }
+    });
+
+    expect(response.statusCode).toBe(204);
+    expect(response.headers["access-control-allow-origin"]).toBe(
+      "http://localhost:3000"
+    );
+  });
+
   test("POST /meetings creates an in-memory meeting session", async () => {
     const app = await testApp();
     const response = await createMeeting(app);
