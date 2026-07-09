@@ -3,14 +3,22 @@
 ## Start Locally
 
 ```sh
+docker compose up
+```
+
+Open `http://localhost:3000`.
+
+This starts Postgres, the Fastify backend on `http://localhost:3001`, and the Next.js dashboard on `http://localhost:3000`.
+
+Manual Bun fallback:
+
+```sh
 # terminal 1
-bun --filter http dev
+HOST=127.0.0.1 PORT=3001 bun --filter http dev
 
 # terminal 2
 bun --filter web dev
 ```
-
-Open `http://localhost:3000`.
 
 Useful env vars:
 

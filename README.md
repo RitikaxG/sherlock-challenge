@@ -123,22 +123,34 @@ NEXT_PUBLIC_ENABLE_DEMO_MODE=true
 SHERLOCK_WEB_ORIGIN=http://localhost:3000
 ```
 
-Run the live demo locally:
+Run the full local demo stack with Docker:
+
+```sh
+docker compose up
+```
+
+This starts:
+
+- Postgres on `localhost:5432`
+- Fastify backend on `http://localhost:3001`
+- Next.js dashboard on `http://localhost:3000`
+
+Open `http://localhost:3000`, choose a scenario, and start replay. The web app creates a meeting through `apps/http`, posts fixture events, listens for `candidate_state_updated` over WebSocket, and falls back to snapshot polling if the socket is unavailable. If the backend is unavailable and demo mode is enabled, the UI shows a clear local visual demo warning instead of pretending it is connected.
+
+Manual Bun fallback:
 
 ```sh
 # terminal 1
-bun --filter http dev
+HOST=127.0.0.1 PORT=3001 bun --filter http dev
 
 # terminal 2
 bun --filter web dev
 ```
 
-Open `http://localhost:3000`, choose a scenario, and start replay. The web app creates a meeting through `apps/http`, posts fixture events, listens for `candidate_state_updated` over WebSocket, and falls back to snapshot polling if the socket is unavailable. If the backend is unavailable and demo mode is enabled, the UI shows a clear local visual demo warning instead of pretending it is connected.
-
-Local Postgres:
+Postgres only:
 
 ```sh
-docker compose up -d
+docker compose up postgres
 ```
 
 ## Next Implementation Direction
