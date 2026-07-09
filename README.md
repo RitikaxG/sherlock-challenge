@@ -1,58 +1,98 @@
-# Turborepo Tailwind CSS starter
+# Sherlock Candidate Identity Fusion Engine
 
-This Turborepo starter is maintained by the Turborepo core team.
+Sherlock needs an identity routing layer that identifies the actual interview candidate in real time by fusing metadata, participant events, transcript evidence, behavior signals, confidence scoring, explanations, and edge-case evaluation.
 
-## Using this example
+## Problem Statement
 
-Run the following command:
+Interview fraud detectors are only useful when Sherlock knows which meeting participant is the candidate. In real calls, the candidate may join as "MacBook Pro", use the wrong display name, arrive late, change names, rejoin, or share the room with interviewers and observers. This project will resolve participant identity continuously, rank candidates with confidence, explain why a participant was selected, and gracefully return insufficient or ambiguous states when evidence is weak.
+
+## Non-Goals
+
+- No full Zoom, Google Meet, or calendar production integration in the sprint prototype.
+- No deepfake detection, face recognition, voice biometrics, or complete anti-fraud suite.
+- No heavy autonomous multi-agent framework.
+- No committed secrets, API keys, or real candidate data.
+- No black-box LLM final decision. LLM output can add transcript evidence only.
+- No scoring engine, WebSocket layer, dashboard, evaluator, or LLM package in this first documentation pass.
+
+## Architecture Overview
+
+The target architecture is a Bun/Turborepo monorepo with pure identity logic at the center:
+
+- `packages/shared`: Zod schemas and TypeScript contracts for meetings, participants, events, evidence, WebSocket messages, and scenarios.
+- `packages/core`: pure signal extraction, fusion scoring, confidence state machine, explanation generation, scenario runner, and evaluator.
+- `packages/db`: Prisma/Postgres persistence for meetings, participants, events, score snapshots, and scenario results.
+- `packages/llm`: structured transcript role evidence adapters with deterministic fallback rules.
+- `apps/api`: Fastify REST and WebSocket service that validates events, calls the core engine, persists snapshots, and broadcasts live candidate state.
+- `apps/web`: real-time dashboard for scenario replay, participant leaderboard, evidence, uncertainty, confidence timeline, and evaluation summaries.
+- `scenarios`: replayable JSON edge cases with expected outcomes.
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for package responsibilities, event flow, and the Mermaid diagram.
+
+## Phase Plan Summary
+
+| Phase | Goal | Status |
+| --- | --- | --- |
+| 0 | Product scope, thesis, acceptance criteria, architecture docs | In progress |
+| 1 | Bun/Turborepo workspace contracts and shared schemas | Next |
+| 2 | Prisma/Postgres persistence package | Later |
+| 3 | Pure core domain model and deterministic signal extractors | Later |
+| 4 | Fusion engine, confidence, ambiguity, and explanations | Later |
+| 5 | Scenario simulator and evaluation harness | Later |
+| 6 | Fastify ingestion and WebSocket broadcast | Later |
+| 7 | Optional LLM transcript classifier evidence package | Later |
+| 8 | React real-time dashboard | Later |
+| 9 | Edge-case hardening and evaluation report | Later |
+| 10 | Submission polish, demo script, and reproducibility pass | Later |
+
+## Current Repository Shape
+
+This repository currently starts from a Turborepo Tailwind template and contains:
+
+- `apps/docs`: Next.js starter app.
+- `apps/web`: Next.js starter app.
+- `packages/ui`: shared React/Tailwind component package.
+- `packages/db`: minimal Prisma package with generated client files and a placeholder schema.
+- `packages/eslint-config`: shared ESLint configuration.
+- `packages/typescript-config`: shared TypeScript configuration.
+- `packages/tailwind-config`: shared Tailwind styles.
+- `docs/implementation-blueprint.pdf` and `docs/implementation-blueprint.docx`: implementation blueprint.
+
+Expected target packages/apps from the blueprint that are not present yet:
+
+- `apps/api`
+- `packages/core`
+- `packages/shared`
+- `packages/llm`
+- `scenarios`
+- `docker-compose.yml`
+
+## Commands
+
+Use Bun from the repository root:
 
 ```sh
-npx create-turbo@latest -e with-tailwind
+bun install
+bun run check-types
+bun run build
+bun run lint
 ```
 
-## What's inside?
+Useful package-level commands currently available:
 
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app with [Tailwind CSS](https://tailwindcss.com/)
-- `web`: another [Next.js](https://nextjs.org/) app with [Tailwind CSS](https://tailwindcss.com/)
-- `ui`: a stub React component library with [Tailwind CSS](https://tailwindcss.com/) shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Building packages/ui
-
-This example is set up to produce compiled styles for `ui` components into the `dist` directory. The component `.tsx` files are consumed by the Next.js apps directly using `transpilePackages` in `next.config.ts`. This was chosen for several reasons:
-
-- Make sharing one `tailwind.config.ts` to apps and packages as easy as possible.
-- Make package compilation simple by only depending on the Next.js Compiler and `tailwindcss`.
-- Ensure Tailwind classes do not overwrite each other. The `ui` package uses a `ui-` prefix for it's classes.
-- Maintain clear package export boundaries.
-
-Another option is to consume `packages/ui` directly from source without building. If using this option, you will need to update the `tailwind.config.ts` in your apps to be aware of your package locations, so it can find all usages of the `tailwindcss` class names for CSS compilation.
-
-For example, in [tailwind.config.ts](packages/tailwind-config/tailwind.config.ts):
-
-```js
-  content: [
-    // app content
-    `src/**/*.{js,ts,jsx,tsx}`,
-    // include packages if not transpiling
-    "../../packages/ui/*.{js,ts,jsx,tsx}",
-  ],
+```sh
+bun --filter web run dev
+bun --filter docs run dev
+bun --filter @repo/ui run check-types
 ```
 
-If you choose this strategy, you can remove the `tailwindcss` and `autoprefixer` dependencies from the `ui` package.
+When the Sherlock packages are added, keep using Bun filters:
 
-### Utilities
+```sh
+bun --filter @sherlock/core run test
+bun --filter @sherlock/db run test
+```
 
-This Turborepo has some additional tools already setup for you:
+## First Implementation Direction
 
-- [Tailwind CSS](https://tailwindcss.com/) for styles
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+The recommended next phase is Phase 1: create the workspace contracts before writing scoring logic. Add `packages/shared` with Zod schemas and TypeScript event contracts, add `packages/core` with a minimal pure test harness, and make `bun run check-types` pass across the workspace.
