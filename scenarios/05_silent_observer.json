@@ -1,0 +1,28 @@
+{
+  "id": "05_silent_observer",
+  "title": "Silent observer is present but candidate has stronger evidence",
+  "meeting": {
+    "id": "scenario_05",
+    "candidateName": "Ritika Gupta",
+    "candidateEmail": "ritika@example.com",
+    "interviewerNames": ["Priya Sharma"],
+    "interviewerEmails": ["priya@sherlock.ai"],
+    "companyDomains": ["sherlock.ai"]
+  },
+  "participants": [
+    { "id": "p_observer", "meetingId": "scenario_05", "displayName": "Guest" },
+    { "id": "p_candidate", "meetingId": "scenario_05", "displayName": "Ritika Gupta", "email": "ritika@example.com" },
+    { "id": "p_interviewer", "meetingId": "scenario_05", "displayName": "Priya Sharma", "email": "priya@sherlock.ai", "isKnownInterviewerHint": true }
+  ],
+  "events": [
+    { "type": "participant_joined", "participantId": "p_interviewer", "timestampSec": 0 },
+    { "type": "participant_joined", "participantId": "p_observer", "timestampSec": 20 },
+    { "type": "participant_joined", "participantId": "p_candidate", "timestampSec": 40 },
+    { "type": "speaking_activity", "participantId": "p_candidate", "timestampSec": 80, "durationSec": 120 },
+    { "type": "transcript_chunk", "participantId": "p_candidate", "timestampSec": 95, "text": "My experience includes building reliable services." }
+  ],
+  "expected": {
+    "candidateParticipantId": "p_candidate",
+    "finalState": "LIKELY_CANDIDATE"
+  }
+}

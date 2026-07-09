@@ -1,0 +1,28 @@
+{
+  "id": "04_multiple_interviewers",
+  "title": "Multiple interviewers join before candidate",
+  "meeting": {
+    "id": "scenario_04",
+    "candidateName": "Ritika Gupta",
+    "candidateEmail": "ritika@example.com",
+    "interviewerNames": ["Priya Sharma", "Dev Mehta"],
+    "interviewerEmails": ["priya@sherlock.ai", "dev@sherlock.ai"],
+    "companyDomains": ["sherlock.ai"]
+  },
+  "participants": [
+    { "id": "p_interviewer_1", "meetingId": "scenario_04", "displayName": "Priya Sharma", "email": "priya@sherlock.ai", "isKnownInterviewerHint": true },
+    { "id": "p_interviewer_2", "meetingId": "scenario_04", "displayName": "Dev Mehta", "email": "dev@sherlock.ai", "isKnownInterviewerHint": true },
+    { "id": "p_candidate", "meetingId": "scenario_04", "displayName": "Ritika Gupta", "email": "ritika@example.com" }
+  ],
+  "events": [
+    { "type": "participant_joined", "participantId": "p_interviewer_1", "timestampSec": 0 },
+    { "type": "participant_joined", "participantId": "p_interviewer_2", "timestampSec": 10 },
+    { "type": "participant_joined", "participantId": "p_candidate", "timestampSec": 90 },
+    { "type": "speaking_activity", "participantId": "p_interviewer_1", "timestampSec": 100, "durationSec": 120 },
+    { "type": "speaking_activity", "participantId": "p_candidate", "timestampSec": 160, "durationSec": 90 }
+  ],
+  "expected": {
+    "candidateParticipantId": "p_candidate",
+    "finalState": "LIKELY_CANDIDATE"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "02_generic_device_name",
+  "title": "Candidate starts as MacBook Pro with weak candidate-like evidence",
+  "meeting": {
+    "id": "scenario_02",
+    "candidateName": "Ritika Gupta",
+    "candidateEmail": "ritika@example.com",
+    "interviewerNames": ["Priya Sharma"],
+    "interviewerEmails": ["priya@sherlock.ai"],
+    "companyDomains": ["sherlock.ai"]
+  },
+  "participants": [
+    { "id": "p_candidate", "meetingId": "scenario_02", "displayName": "MacBook Pro" },
+    {
+      "id": "p_interviewer",
+      "meetingId": "scenario_02",
+      "displayName": "Priya Sharma",
+      "email": "priya@sherlock.ai",
+      "isKnownInterviewerHint": true
+    }
+  ],
+  "events": [
+    { "type": "participant_joined", "participantId": "p_interviewer", "timestampSec": 0 },
+    { "type": "participant_joined", "participantId": "p_candidate", "timestampSec": 40 },
+    { "type": "speaking_activity", "participantId": "p_candidate", "timestampSec": 80, "durationSec": 120 },
+    { "type": "transcript_chunk", "participantId": "p_candidate", "timestampSec": 90, "text": "My name is Ritika and I worked on my project recently." }
+  ],
+  "expected": {
+    "candidateParticipantId": null,
+    "finalState": "INSUFFICIENT_DATA"
+  }
+}

@@ -103,10 +103,15 @@
       "bin": {
         "sherlock-eval": "./cli.ts",
       },
+      "dependencies": {
+        "@sherlock/core": "*",
+        "@sherlock/shared": "*",
+      },
       "devDependencies": {
         "@repo/typescript-config": "*",
         "@types/node": "^22.15.30",
         "typescript": "5.9.2",
+        "vitest": "^4.0.0",
       },
     },
     "packages/realtime": {

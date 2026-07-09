@@ -1,0 +1,27 @@
+{
+  "id": "06_display_name_change",
+  "title": "Candidate changes display name from generic device to candidate name",
+  "meeting": {
+    "id": "scenario_06",
+    "candidateName": "Ritika Gupta",
+    "candidateEmail": "ritika@example.com",
+    "interviewerNames": ["Priya Sharma"],
+    "interviewerEmails": ["priya@sherlock.ai"],
+    "companyDomains": ["sherlock.ai"]
+  },
+  "participants": [
+    { "id": "p_candidate", "meetingId": "scenario_06", "displayName": "MacBook Pro" },
+    { "id": "p_interviewer", "meetingId": "scenario_06", "displayName": "Priya Sharma", "email": "priya@sherlock.ai", "isKnownInterviewerHint": true }
+  ],
+  "events": [
+    { "type": "participant_joined", "participantId": "p_interviewer", "timestampSec": 0 },
+    { "type": "participant_joined", "participantId": "p_candidate", "timestampSec": 30 },
+    { "type": "display_name_changed", "participantId": "p_candidate", "timestampSec": 60, "newDisplayName": "Ritika Gupta" },
+    { "type": "speaking_activity", "participantId": "p_candidate", "timestampSec": 90, "durationSec": 80 },
+    { "type": "transcript_chunk", "participantId": "p_candidate", "timestampSec": 100, "text": "I am Ritika and I worked on a project similar to this." }
+  ],
+  "expected": {
+    "candidateParticipantId": "p_candidate",
+    "finalState": "LIKELY_CANDIDATE"
+  }
+}

@@ -13,7 +13,7 @@ Interview fraud detectors are only useful when Sherlock knows which meeting part
 - No heavy autonomous multi-agent framework.
 - No committed secrets, API keys, or real candidate data.
 - No black-box LLM final decision. LLM output can add transcript evidence only.
-- No real scoring engine, WebSocket behavior, dashboard, evaluator behavior, or LLM logic in the current backend-foundation phase.
+- No WebSocket behavior, dashboard, or LLM logic in the current evaluation-harness phase.
 
 ## Architecture Overview
 
@@ -40,7 +40,7 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for package responsibilities, event flo
 | 2 | Prisma/Postgres persistence package | Done |
 | 3 | Pure core domain model and deterministic signal extractors | Done |
 | 4 | Fusion engine, confidence, ambiguity, and explanations | Done |
-| 5 | Scenario simulator and evaluation harness | Later |
+| 5 | Scenario simulator and evaluation harness | Done |
 | 6 | Fastify ingestion and WebSocket broadcast | Later |
 | 7 | Optional LLM transcript classifier evidence package | Later |
 | 8 | React real-time dashboard | Later |
@@ -58,7 +58,7 @@ This repository currently starts from a Turborepo Tailwind template and contains
 - `packages/core`: pure identity engine with deterministic signal extraction and fusion decision snapshots.
 - `packages/db`: Prisma/Postgres schema, client helper, and repository plumbing.
 - `packages/realtime`: placeholder realtime infrastructure package.
-- `packages/eval`: placeholder evaluation package.
+- `packages/eval`: scenario replay, metrics, expected-vs-actual checks, and CLI reporting.
 - `packages/eslint-config`: shared ESLint configuration.
 - `packages/typescript-config`: shared TypeScript configuration.
 - `packages/tailwind-config`: shared Tailwind styles.
@@ -67,7 +67,6 @@ This repository currently starts from a Turborepo Tailwind template and contains
 Expected target packages/apps that are not present yet:
 
 - `packages/llm`
-- `scenarios`
 
 ## Commands
 
@@ -83,13 +82,15 @@ bun run lint
 Useful package-level commands currently available:
 
 ```sh
-bun --filter web run dev
-bun --filter http run check-types
-bun --filter @sherlock/shared run check-types
+bun --filter web dev
+bun --filter http check-types
+bun --filter '@sherlock/shared' check-types
 bun --filter '@sherlock/core' check-types
 bun --filter '@sherlock/core' test
-bun --filter @sherlock/realtime run check-types
-bun --filter @sherlock/eval run check-types
+bun --filter '@sherlock/realtime' check-types
+bun --filter '@sherlock/eval' check-types
+bun --filter '@sherlock/eval' test
+bun --filter '@sherlock/eval' eval
 bun --filter '@sherlock/db' db:generate
 bun --filter '@sherlock/db' db:migrate
 bun --filter '@sherlock/db' check-types
@@ -105,4 +106,4 @@ docker compose up -d
 
 ## Next Implementation Direction
 
-The recommended next phase is Phase 5: build the scenario simulator and evaluation harness without moving identity decision logic out of `packages/core`.
+The recommended next phase is Phase 6: add Fastify ingestion and WebSocket broadcast in `apps/http`, with realtime helpers from `packages/realtime`, without moving identity decision logic out of `packages/core`.

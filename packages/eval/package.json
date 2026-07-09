@@ -11,16 +11,25 @@
     "./cli": "./cli.ts",
     "./evaluator": "./evaluator.ts",
     "./metrics": "./metrics.ts",
+    "./reporter": "./reporter.ts",
+    "./scenario-loader": "./scenario-loader.ts",
     "./scenario-runner": "./scenario-runner.ts"
   },
   "scripts": {
     "build": "tsc --noEmit",
     "check-types": "tsc --noEmit",
+    "test": "vitest run",
+    "eval": "bun ./cli.ts",
     "lint": "eslint . --max-warnings 0"
+  },
+  "dependencies": {
+    "@sherlock/core": "*",
+    "@sherlock/shared": "*"
   },
   "devDependencies": {
     "@repo/typescript-config": "*",
     "@types/node": "^22.15.30",
-    "typescript": "5.9.2"
+    "typescript": "5.9.2",
+    "vitest": "^4.0.0"
   }
 }

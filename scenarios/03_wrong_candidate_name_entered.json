@@ -1,0 +1,26 @@
+{
+  "id": "03_wrong_candidate_name_entered",
+  "title": "Candidate metadata has incomplete name but transcript identifies candidate role",
+  "meeting": {
+    "id": "scenario_03",
+    "candidateName": "Rita Gupta",
+    "candidateEmail": "ritika@example.com",
+    "interviewerNames": ["Priya Sharma"],
+    "interviewerEmails": ["priya@sherlock.ai"],
+    "companyDomains": ["sherlock.ai"]
+  },
+  "participants": [
+    { "id": "p_candidate", "meetingId": "scenario_03", "displayName": "Ritika G", "email": "ritika@example.com" },
+    { "id": "p_interviewer", "meetingId": "scenario_03", "displayName": "Priya Sharma", "email": "priya@sherlock.ai", "isKnownInterviewerHint": true }
+  ],
+  "events": [
+    { "type": "participant_joined", "participantId": "p_interviewer", "timestampSec": 0 },
+    { "type": "participant_joined", "participantId": "p_candidate", "timestampSec": 50 },
+    { "type": "speaking_activity", "participantId": "p_candidate", "timestampSec": 100, "durationSec": 180 },
+    { "type": "transcript_chunk", "participantId": "p_candidate", "timestampSec": 120, "text": "I am the candidate and my experience includes backend systems." }
+  ],
+  "expected": {
+    "candidateParticipantId": "p_candidate",
+    "finalState": "LIKELY_CANDIDATE"
+  }
+}

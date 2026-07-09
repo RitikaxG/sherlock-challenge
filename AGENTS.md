@@ -34,15 +34,22 @@ These rules apply to future Codex work in this repository.
 
 ## Current Phase Guardrail
 
-Phase 4 is pure core fusion, confidence, ambiguity, and explanation logic only.
+Phase 5 is scenario simulation and evaluation harness only.
 
 Do not implement yet:
 
 - WebSocket behavior
 - Fastify route behavior
 - dashboard
-- scenario evaluator behavior
 - LLM logic/provider
+
+For `packages/eval`:
+
+- Replay scenarios by calling `packages/core`; do not reimplement candidate selection, scoring, ambiguity, or confidence rules.
+- Evaluation code may load local JSON fixtures and compute expected-vs-actual metrics.
+- Scenario fixtures should stay synthetic and must not contain real candidate data.
+- The eval package may depend on `@sherlock/shared`, `@sherlock/core`, and Node/Bun filesystem APIs only.
+- It must not import DB, Fastify/API, realtime/WebSocket, React/UI, or LLM packages.
 
 ## Commands
 
@@ -59,6 +66,8 @@ When package-specific commands are added, prefer Bun workspace filters, for exam
 
 ```sh
 bun --filter '@sherlock/core' test
+bun --filter '@sherlock/eval' test
+bun --filter '@sherlock/eval' eval
 ```
 
 ## Testing Expectations

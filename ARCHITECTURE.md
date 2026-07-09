@@ -14,12 +14,12 @@ Sherlock's Candidate Identity Fusion Engine is designed as a monorepo with pure 
 | `packages/db` | Present | Prisma schema, migrations, typed client helper, and repository functions for meetings, participants, events, score snapshots, and scenario results. |
 | `packages/llm` | Missing | Provider interface and adapters that convert transcript chunks into structured role evidence. It must not make final candidate decisions. |
 | `packages/realtime` | Present as a placeholder package | Reusable realtime infrastructure only: connection registry, broadcaster, meeting subscriptions, typed broadcast helpers. It is not a deployable server. |
-| `packages/eval` | Present as a placeholder package | Scenario replay, expected-vs-actual checks, evaluation metrics, and CLI reporting. |
+| `packages/eval` | Present with scenario harness | Scenario replay, expected-vs-actual checks, evaluation metrics, and CLI reporting. |
 | `packages/ui` | Present as shared React/Tailwind components | Shared visual components used by web surfaces, if helpful. |
 | `packages/eslint-config` | Present | Shared lint configuration. |
 | `packages/typescript-config` | Present | Shared TypeScript configuration. |
 | `packages/tailwind-config` | Present | Shared Tailwind styles/configuration. |
-| `scenarios` | Missing | JSON meeting simulations and expected outcomes for repeatable evaluation. |
+| `scenarios` | Present with 10 fixtures | JSON meeting simulations and expected outcomes for repeatable evaluation. |
 
 ## Dependency Boundaries
 

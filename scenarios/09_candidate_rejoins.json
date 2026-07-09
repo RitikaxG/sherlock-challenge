@@ -1,0 +1,28 @@
+{
+  "id": "09_candidate_rejoins",
+  "title": "Candidate leaves and rejoins with same participant identity",
+  "meeting": {
+    "id": "scenario_09",
+    "candidateName": "Ritika Gupta",
+    "candidateEmail": "ritika@example.com",
+    "interviewerNames": ["Priya Sharma"],
+    "interviewerEmails": ["priya@sherlock.ai"],
+    "companyDomains": ["sherlock.ai"]
+  },
+  "participants": [
+    { "id": "p_candidate", "meetingId": "scenario_09", "displayName": "Ritika Gupta", "email": "ritika@example.com" },
+    { "id": "p_interviewer", "meetingId": "scenario_09", "displayName": "Priya Sharma", "email": "priya@sherlock.ai", "isKnownInterviewerHint": true }
+  ],
+  "events": [
+    { "type": "participant_joined", "participantId": "p_interviewer", "timestampSec": 0 },
+    { "type": "participant_joined", "participantId": "p_candidate", "timestampSec": 30 },
+    { "type": "participant_left", "participantId": "p_candidate", "timestampSec": 180 },
+    { "type": "participant_joined", "participantId": "p_candidate", "timestampSec": 240 },
+    { "type": "speaking_activity", "participantId": "p_candidate", "timestampSec": 260, "durationSec": 90 },
+    { "type": "transcript_chunk", "participantId": "p_candidate", "timestampSec": 275, "text": "I am here for the interview and my project used TypeScript." }
+  ],
+  "expected": {
+    "candidateParticipantId": "p_candidate",
+    "finalState": "LIKELY_CANDIDATE"
+  }
+}

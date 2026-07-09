@@ -1,0 +1,26 @@
+{
+  "id": "08_two_unknown_ambiguous",
+  "title": "Two unknown participants have similar evidence",
+  "meeting": {
+    "id": "scenario_08",
+    "candidateName": "Ritika Gupta",
+    "interviewerNames": [],
+    "interviewerEmails": [],
+    "companyDomains": ["sherlock.ai"]
+  },
+  "participants": [
+    { "id": "p_one", "meetingId": "scenario_08", "displayName": "Ritika" },
+    { "id": "p_two", "meetingId": "scenario_08", "displayName": "Ritika" }
+  ],
+  "events": [
+    { "type": "participant_joined", "participantId": "p_one", "timestampSec": 10 },
+    { "type": "participant_joined", "participantId": "p_two", "timestampSec": 12 },
+    { "type": "transcript_chunk", "participantId": "p_one", "timestampSec": 60, "text": "My project involved backend services." },
+    { "type": "transcript_chunk", "participantId": "p_two", "timestampSec": 62, "text": "My project involved backend services." }
+  ],
+  "expected": {
+    "candidateParticipantId": null,
+    "finalState": "AMBIGUOUS",
+    "allowAmbiguous": true
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "07_late_join_candidate",
+  "title": "Candidate joins late and evidence updates after arrival",
+  "meeting": {
+    "id": "scenario_07",
+    "candidateName": "Ritika Gupta",
+    "candidateEmail": "ritika@example.com",
+    "interviewerNames": ["Priya Sharma"],
+    "interviewerEmails": ["priya@sherlock.ai"],
+    "companyDomains": ["sherlock.ai"]
+  },
+  "participants": [
+    { "id": "p_interviewer", "meetingId": "scenario_07", "displayName": "Priya Sharma", "email": "priya@sherlock.ai", "isKnownInterviewerHint": true },
+    { "id": "p_candidate", "meetingId": "scenario_07", "displayName": "Ritika Gupta", "email": "ritika@example.com" }
+  ],
+  "events": [
+    { "type": "participant_joined", "participantId": "p_interviewer", "timestampSec": 0 },
+    { "type": "speaking_activity", "participantId": "p_interviewer", "timestampSec": 240, "durationSec": 180 },
+    { "type": "participant_joined", "participantId": "p_candidate", "timestampSec": 600 },
+    { "type": "speaking_activity", "participantId": "p_candidate", "timestampSec": 660, "durationSec": 120 }
+  ],
+  "expected": {
+    "candidateParticipantId": "p_candidate",
+    "finalState": "LIKELY_CANDIDATE"
+  }
+}

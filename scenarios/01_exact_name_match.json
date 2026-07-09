@@ -1,0 +1,35 @@
+{
+  "id": "01_exact_name_match",
+  "title": "Candidate joins with exact display name and email",
+  "meeting": {
+    "id": "scenario_01",
+    "candidateName": "Ritika Gupta",
+    "candidateEmail": "ritika@example.com",
+    "interviewerNames": ["Priya Sharma"],
+    "interviewerEmails": ["priya@sherlock.ai"],
+    "companyDomains": ["sherlock.ai"]
+  },
+  "participants": [
+    {
+      "id": "p_candidate",
+      "meetingId": "scenario_01",
+      "displayName": "Ritika Gupta",
+      "email": "ritika@example.com"
+    },
+    {
+      "id": "p_interviewer",
+      "meetingId": "scenario_01",
+      "displayName": "Priya Sharma",
+      "email": "priya@sherlock.ai",
+      "isKnownInterviewerHint": true
+    }
+  ],
+  "events": [
+    { "type": "participant_joined", "participantId": "p_interviewer", "timestampSec": 0 },
+    { "type": "participant_joined", "participantId": "p_candidate", "timestampSec": 60 }
+  ],
+  "expected": {
+    "candidateParticipantId": "p_candidate",
+    "finalState": "LIKELY_CANDIDATE"
+  }
+}

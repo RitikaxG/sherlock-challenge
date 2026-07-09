@@ -1,0 +1,24 @@
+{
+  "id": "10_no_transcript_yet",
+  "title": "Only weak generic metadata exists early in the meeting",
+  "meeting": {
+    "id": "scenario_10",
+    "candidateName": "Ritika Gupta",
+    "interviewerNames": ["Priya Sharma"],
+    "interviewerEmails": ["priya@sherlock.ai"],
+    "companyDomains": ["sherlock.ai"]
+  },
+  "participants": [
+    { "id": "p_unknown", "meetingId": "scenario_10", "displayName": "MacBook Pro" },
+    { "id": "p_interviewer", "meetingId": "scenario_10", "displayName": "Priya Sharma", "email": "priya@sherlock.ai", "isKnownInterviewerHint": true }
+  ],
+  "events": [
+    { "type": "participant_joined", "participantId": "p_interviewer", "timestampSec": 0 },
+    { "type": "participant_joined", "participantId": "p_unknown", "timestampSec": 20 },
+    { "type": "webcam_changed", "participantId": "p_unknown", "timestampSec": 30, "webcamOn": true }
+  ],
+  "expected": {
+    "candidateParticipantId": null,
+    "finalState": "INSUFFICIENT_DATA"
+  }
+}
