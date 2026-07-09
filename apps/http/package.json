@@ -4,12 +4,14 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --noEmit",
     "check-types": "tsc --noEmit",
     "dev": "tsc --watch",
     "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
+    "@sherlock/core": "*",
+    "@sherlock/shared": "*",
     "@sherlock/realtime": "*"
   },
   "devDependencies": {

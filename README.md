@@ -13,7 +13,7 @@ Interview fraud detectors are only useful when Sherlock knows which meeting part
 - No heavy autonomous multi-agent framework.
 - No committed secrets, API keys, or real candidate data.
 - No black-box LLM final decision. LLM output can add transcript evidence only.
-- No scoring engine, WebSocket behavior, dashboard, evaluator behavior, or LLM logic in this architecture-alignment pass.
+- No real scoring engine, WebSocket behavior, dashboard, evaluator behavior, DB repositories, or LLM logic in Phase 1.
 
 ## Architecture Overview
 
@@ -36,7 +36,7 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for package responsibilities, event flo
 | Phase | Goal | Status |
 | --- | --- | --- |
 | 0 | Product scope, thesis, acceptance criteria, architecture docs | Done |
-| 1 | Bun/Turborepo workspace contracts and package boundary alignment | In progress |
+| 1 | Bun/Turborepo workspace contracts and package boundary alignment | Structurally complete; pending Bun verification |
 | 2 | Prisma/Postgres persistence package | Later |
 | 3 | Pure core domain model and deterministic signal extractors | Later |
 | 4 | Fusion engine, confidence, ambiguity, and explanations | Later |
@@ -54,6 +54,8 @@ This repository currently starts from a Turborepo Tailwind template and contains
 - `apps/web`: Next.js starter app.
 - `apps/http`: placeholder backend composition package.
 - `packages/ui`: shared React/Tailwind component package.
+- `packages/shared`: Zod schemas and TypeScript contracts.
+- `packages/core`: pure placeholder identity-engine package.
 - `packages/db`: minimal Prisma package with generated client files and a placeholder schema.
 - `packages/realtime`: placeholder realtime infrastructure package.
 - `packages/eval`: placeholder evaluation package.
@@ -64,8 +66,6 @@ This repository currently starts from a Turborepo Tailwind template and contains
 
 Expected target packages/apps that are not present yet:
 
-- `packages/core`
-- `packages/shared`
 - `packages/llm`
 - `scenarios`
 - `docker-compose.yml`
@@ -86,18 +86,20 @@ Useful package-level commands currently available:
 ```sh
 bun --filter web run dev
 bun --filter http run check-types
+bun --filter @sherlock/shared run check-types
+bun --filter @sherlock/core run check-types
+bun --filter @sherlock/core run test
 bun --filter @sherlock/realtime run check-types
 bun --filter @sherlock/eval run check-types
 bun --filter @repo/ui run check-types
 ```
 
-When the Sherlock packages are added, keep using Bun filters:
+Later package-level examples:
 
 ```sh
-bun --filter @sherlock/core run test
 bun --filter @sherlock/db run test
 ```
 
 ## First Implementation Direction
 
-The recommended next phase is to finish Phase 1 contracts before writing scoring logic. Add `packages/shared` with Zod schemas and TypeScript event contracts, add `packages/core` with a minimal pure test harness, and make `bun run check-types` pass across the workspace.
+The recommended next phase is Phase 2 DB work after Bun is available and `bun install`, `bun run check-types`, `bun run build`, and `bun --filter @sherlock/core run test` pass locally.

@@ -13,6 +13,8 @@ These rules apply to future Codex work in this repository.
 ## Architecture Rules
 
 - Use the existing Turborepo and Bun workspace setup. Do not switch to npm, pnpm, or yarn.
+- Use Bun-first package exports. Runtime exports should point directly at TypeScript entrypoints such as `./index.ts` or `./broadcaster.ts`.
+- Do not export package runtime entrypoints from `dist/`, and do not make internal workspace imports depend on generated build output.
 - Follow the repository's existing package conventions. Do not force a `src/`-based structure where the package already uses root-level modules.
 - Apps compose packages. Packages must not depend on apps.
 - `apps/http` is the deployable backend transport/composition layer.
@@ -31,7 +33,7 @@ These rules apply to future Codex work in this repository.
 
 ## Current Phase Guardrail
 
-This pass is architecture alignment only.
+Phase 1B is workspace contract alignment only.
 
 Do not implement yet:
 

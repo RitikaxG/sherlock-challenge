@@ -4,14 +4,14 @@
   "type": "module",
   "private": true,
   "exports": {
-    ".": "./dist/index.js",
-    "./broadcaster": "./dist/broadcaster.js",
-    "./connection-registry": "./dist/connection-registry.js",
-    "./meeting-subscriptions": "./dist/meeting-subscriptions.js",
-    "./realtime-hub": "./dist/realtime-hub.js"
+    ".": "./index.ts",
+    "./broadcaster": "./broadcaster.ts",
+    "./connection-registry": "./connection-registry.ts",
+    "./meeting-subscriptions": "./meeting-subscriptions.ts",
+    "./realtime-hub": "./realtime-hub.ts"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --noEmit",
     "check-types": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0"
   },

@@ -9,8 +9,8 @@ Sherlock's Candidate Identity Fusion Engine is designed as a monorepo with pure 
 | `apps/web` | Present as a Next.js starter app | Demo dashboard for scenario replay, live participant rankings, confidence state, evidence, uncertainty, and evaluation results. |
 | `apps/docs` | Removed | Not part of the current target architecture. |
 | `apps/http` | Present as a placeholder package | Deployable backend transport/composition layer. It composes HTTP routes and the WebSocket endpoint in one server, validates inputs, calls packages, persists snapshots, and broadcasts candidate-state updates. |
-| `packages/core` | Missing | Pure identity engine: metadata, behavior, transcript signal handling, fusion scoring, confidence state machine, and explanations. |
-| `packages/shared` | Missing | Zod schemas and TypeScript contracts for meetings, participants, events, evidence, candidate state, WebSocket messages, and scenario files. |
+| `packages/core` | Present as a pure placeholder package | Pure identity engine: metadata, behavior, transcript signal handling, fusion scoring, confidence state machine, and explanations. Current functions return deterministic placeholder output only. |
+| `packages/shared` | Present | Zod schemas and TypeScript contracts for meetings, participants, events, evidence, candidate state, WebSocket messages, and scenario files. |
 | `packages/db` | Present, minimal Prisma package | Prisma schema, migrations, typed client, and repository functions for meetings, participants, events, score snapshots, and scenario results. |
 | `packages/llm` | Missing | Provider interface and adapters that convert transcript chunks into structured role evidence. It must not make final candidate decisions. |
 | `packages/realtime` | Present as a placeholder package | Reusable realtime infrastructure only: connection registry, broadcaster, meeting subscriptions, typed broadcast helpers. It is not a deployable server. |
@@ -32,6 +32,13 @@ Allowed dependency direction:
 - `packages/db` may depend on `packages/shared` for persisted contract types.
 - `packages/realtime` may depend on `packages/shared` for typed broadcast messages.
 - `packages/core` may depend on `packages/shared`, but must not depend on apps, DB, realtime, UI, or LLM providers.
+
+Bun-first package export rule:
+
+- Internal packages export direct TypeScript entrypoints such as `./index.ts`.
+- Submodules export direct `.ts` files such as `./broadcaster.ts` or `./metrics.ts`.
+- Runtime exports must not point to `dist/*.js`.
+- New packages should follow the existing root-level module convention unless there is a strong reason to add `src/`.
 
 Forbidden dependency direction:
 
