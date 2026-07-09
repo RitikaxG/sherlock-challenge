@@ -40,7 +40,9 @@ export function decideCandidateState(
   if (
     topParticipant.confidence >= config.thresholds.confirmed &&
     input.margin >= config.thresholds.ambiguousMargin &&
-    !topParticipant.hasStrongInterviewerExclusion
+    !topParticipant.hasStrongInterviewerExclusion &&
+    !topParticipant.hasStrongContradiction &&
+    topParticipant.confirmationEligible
   ) {
     return "CONFIRMED_CANDIDATE";
   }

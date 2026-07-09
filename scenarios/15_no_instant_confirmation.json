@@ -1,0 +1,35 @@
+{
+  "id": "15_no_instant_confirmation",
+  "title": "Strong evidence does not instantly confirm without stability",
+  "meeting": {
+    "id": "scenario_15",
+    "candidateName": "Ritika Gupta",
+    "candidateEmail": "ritika@example.com",
+    "interviewerNames": ["Priya Sharma"],
+    "interviewerEmails": ["priya@sherlock.ai"],
+    "companyDomains": ["sherlock.ai"]
+  },
+  "participants": [
+    {
+      "id": "p_candidate",
+      "meetingId": "scenario_15",
+      "displayName": "Ritika Gupta",
+      "email": "ritika@example.com"
+    }
+  ],
+  "events": [
+    { "type": "participant_joined", "participantId": "p_candidate", "timestampSec": 0 },
+    {
+      "type": "transcript_chunk",
+      "participantId": "p_candidate",
+      "timestampSec": 5,
+      "text": "My name is Ritika Gupta, I am here for the interview.",
+      "source": "manual_fixture",
+      "sourceEventId": "scenario_15_transcript_1"
+    }
+  ],
+  "expected": {
+    "candidateParticipantId": "p_candidate",
+    "finalState": "LIKELY_CANDIDATE"
+  }
+}

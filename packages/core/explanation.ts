@@ -53,8 +53,30 @@ export function buildCandidateExplanation(
     );
   }
 
+  if (topParticipant?.hasStrongContradiction) {
+    uncertainty.push(
+      "Top participant has contradictory candidate and interviewer evidence, so confidence is reduced."
+    );
+  }
+
+  if (
+    topParticipant?.confirmationBlockReason &&
+    result.decisionState === "LIKELY_CANDIDATE"
+  ) {
+    uncertainty.push(topParticipant.confirmationBlockReason);
+  }
+
   if (result.decisionState === "INSUFFICIENT_DATA") {
     uncertainty.push("Candidate identity remains insufficiently supported by evidence.");
+  }
+
+  if (
+    result.decisionState === "LIKELY_CANDIDATE" ||
+    result.decisionState === "CONFIRMED_CANDIDATE"
+  ) {
+    uncertainty.push(
+      "Candidate participant stream is identified, but human identity verification such as face match, liveness, or ID verification has not been performed."
+    );
   }
 
   if (result.decisionState !== "AMBIGUOUS" && secondParticipant) {

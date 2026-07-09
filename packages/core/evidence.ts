@@ -7,7 +7,14 @@ export function clampStrength(value: number) {
 export function createSignal(signal: ExtractedSignal): ExtractedSignal {
   return {
     ...signal,
-    strength: clampStrength(signal.strength)
+    strength: clampStrength(signal.strength),
+    specificity:
+      signal.specificity ??
+      (signal.strength >= 0.75
+        ? "strong"
+        : signal.strength >= 0.4
+          ? "medium"
+          : "weak")
   };
 }
 

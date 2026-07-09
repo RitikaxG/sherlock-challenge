@@ -35,7 +35,15 @@ export const ParticipantSchema = z.object({
 
 const BaseMeetingEventSchema = z.object({
   participantId: z.string().min(1),
-  timestampSec: z.number().nonnegative()
+  timestampSec: z.number().nonnegative(),
+  source: z.string().min(1).optional(),
+  sourceEventId: z.string().min(1).optional()
+});
+
+const SpeechEventMetadataSchema = z.object({
+  speakerConfidence: z.number().min(0).max(1).optional(),
+  startSec: z.number().nonnegative().optional(),
+  endSec: z.number().nonnegative().optional()
 });
 
 export const MeetingEventSchema = z.discriminatedUnion("type", [
@@ -60,12 +68,27 @@ export const MeetingEventSchema = z.discriminatedUnion("type", [
   BaseMeetingEventSchema.extend({
     type: z.literal("speaking_activity"),
     durationSec: z.number().nonnegative()
-  }),
+  }).merge(SpeechEventMetadataSchema),
   BaseMeetingEventSchema.extend({
     type: z.literal("transcript_chunk"),
-    text: z.string().min(1)
-  })
-]);
+    text: z.string().min(1),
+    isFinal: z.boolean().optional()
+  }).merge(SpeechEventMetadataSchema)
+]).superRefine((event, context) => {
+  if (
+    "startSec" in event &&
+    "endSec" in event &&
+    event.startSec !== undefined &&
+    event.endSec !== undefined &&
+    event.endSec < event.startSec
+  ) {
+    context.addIssue({
+      code: "custom",
+      message: "endSec must be greater than or equal to startSec",
+      path: ["endSec"]
+    });
+  }
+});
 
 export const EvidenceItemSchema = z.object({
   signal: z.string().min(1),

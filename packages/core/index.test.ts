@@ -224,12 +224,12 @@ describe("@sherlock/core Phase 3 signal extraction", () => {
       expect.arrayContaining([
         expect.objectContaining({
           participantId: "p_candidate",
-          kind: "candidate_transcript_phrase",
+          kind: "candidate_name_spoken",
           direction: "positive"
         }),
         expect.objectContaining({
           participantId: "p_interviewer",
-          kind: "interviewer_transcript_phrase",
+          kind: "interviewer_question_prompt",
           direction: "negative"
         })
       ])
@@ -347,13 +347,13 @@ describe("@sherlock/core Phase 3 signal extraction", () => {
         type: "transcript_chunk",
         participantId: "p_one",
         timestampSec: 40,
-        text: "My project involved backend systems."
+        text: "My name is Ritika and my project involved backend systems."
       }),
       MeetingEventSchema.parse({
         type: "transcript_chunk",
         participantId: "p_two",
         timestampSec: 42,
-        text: "My project involved backend systems."
+        text: "My name is Ritika and my project involved backend systems."
       })
     ].reduce(applyMeetingEvent, state);
 
@@ -394,6 +394,250 @@ describe("@sherlock/core Phase 3 signal extraction", () => {
     expect(candidate?.rawScore).toBeGreaterThan(0);
     expect(interviewer?.rawScore).toBeLessThan(0);
     expect(candidate?.confidence).toBeGreaterThan(interviewer?.confidence ?? 0);
+  });
+
+  test("generic transcript phrase alone stays insufficient", () => {
+    const baseState = createInitialSessionState(meeting, [
+      participant({ id: "p_candidate", displayName: "MacBook Pro" })
+    ]);
+    const state = applyMeetingEvent(
+      baseState,
+      MeetingEventSchema.parse({
+        type: "transcript_chunk",
+        participantId: "p_candidate",
+        timestampSec: 40,
+        text: "My project used TypeScript."
+      })
+    );
+
+    const snapshot = rankParticipants(state);
+
+    expect(["INSUFFICIENT_DATA", "POSSIBLE_CANDIDATE"]).toContain(
+      snapshot.state
+    );
+    if (snapshot.state === "INSUFFICIENT_DATA") {
+      expect(snapshot.selectedCandidateId).toBeNull();
+    }
+  });
+
+  test("self-identification plus speech can produce a likely candidate", () => {
+    const baseState = createInitialSessionState(meeting, [
+      participant({ id: "p_candidate", displayName: "MacBook Pro" }),
+      participant({
+        id: "p_interviewer",
+        displayName: "Priya Sharma",
+        email: "priya@sherlock.ai"
+      })
+    ]);
+    const state = [
+      MeetingEventSchema.parse({
+        type: "speaking_activity",
+        participantId: "p_candidate",
+        timestampSec: 30,
+        durationSec: 300
+      }),
+      MeetingEventSchema.parse({
+        type: "transcript_chunk",
+        participantId: "p_candidate",
+        timestampSec: 35,
+        text: "My name is Ritika Gupta, I am here for the interview."
+      })
+    ].reduce(applyMeetingEvent, baseState);
+
+    const snapshot = rankParticipants(state);
+
+    expect(snapshot.selectedCandidateId).toBe("p_candidate");
+    expect(snapshot.state).toBe("LIKELY_CANDIDATE");
+  });
+
+  test("generic phrase plus strong metadata can help reach likely", () => {
+    const baseState = createInitialSessionState(meeting, [
+      participant({
+        id: "p_candidate",
+        displayName: "Ritika Gupta",
+        email: "ritika@gmail.com"
+      })
+    ]);
+    const state = applyMeetingEvent(
+      baseState,
+      MeetingEventSchema.parse({
+        type: "transcript_chunk",
+        participantId: "p_candidate",
+        timestampSec: 30,
+        text: "My project used TypeScript."
+      })
+    );
+
+    const snapshot = rankParticipants(state);
+
+    expect(snapshot.selectedCandidateId).toBe("p_candidate");
+    expect(snapshot.state).toBe("LIKELY_CANDIDATE");
+  });
+
+  test("candidate-like transcript with interviewer email does not confirm", () => {
+    const baseState = createInitialSessionState(meeting, [
+      participant({
+        id: "p_conflicted",
+        displayName: "Priya Sharma",
+        email: "priya@sherlock.ai"
+      })
+    ]);
+    const state = applyMeetingEvent(
+      baseState,
+      MeetingEventSchema.parse({
+        type: "transcript_chunk",
+        participantId: "p_conflicted",
+        timestampSec: 20,
+        text: "I am the candidate."
+      })
+    );
+
+    const snapshot = rankParticipants(state);
+
+    expect(snapshot.state).not.toBe("CONFIRMED_CANDIDATE");
+    expect(snapshot.uncertainty).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("contradictory candidate and interviewer evidence")
+      ])
+    );
+  });
+
+  test("candidate name with interviewer email creates contradiction uncertainty", () => {
+    const conflictMeeting = MeetingSchema.parse({
+      ...meeting,
+      candidateName: "Priya Sharma",
+      candidateEmail: undefined
+    });
+    const state = createInitialSessionState(conflictMeeting, [
+      ParticipantSchema.parse({
+        id: "p_conflicted",
+        meetingId: meeting.id,
+        displayName: "Priya Sharma",
+        email: "priya@sherlock.ai"
+      })
+    ]);
+
+    const snapshot = rankParticipants(state);
+
+    expect(snapshot.state).not.toBe("CONFIRMED_CANDIDATE");
+    expect(snapshot.uncertainty).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("contradictory candidate and interviewer evidence")
+      ])
+    );
+  });
+
+  test("mixed candidate and interviewer transcript role lowers confidence", () => {
+    const baseState = createInitialSessionState(meeting, [
+      participant({ id: "p_mixed", displayName: "Ritika Gupta" })
+    ]);
+    const candidateOnly = applyMeetingEvent(
+      baseState,
+      MeetingEventSchema.parse({
+        type: "transcript_chunk",
+        participantId: "p_mixed",
+        timestampSec: 20,
+        text: "My name is Ritika Gupta and I am here for the interview."
+      })
+    );
+    const mixed = applyMeetingEvent(
+      candidateOnly,
+      MeetingEventSchema.parse({
+        type: "transcript_chunk",
+        participantId: "p_mixed",
+        timestampSec: 25,
+        text: "Tell me about yourself and I will ask the next question."
+      })
+    );
+
+    expect(rankParticipants(mixed).confidence).toBeLessThan(
+      rankParticipants(candidateOnly).confidence
+    );
+  });
+
+  test("confirmation requires temporal stability", () => {
+    const baseState = createInitialSessionState(meeting, [
+      participant({
+        id: "p_candidate",
+        displayName: "Ritika Gupta",
+        email: "ritika@gmail.com"
+      })
+    ]);
+    const unstable = applyMeetingEvent(
+      baseState,
+      MeetingEventSchema.parse({
+        type: "transcript_chunk",
+        participantId: "p_candidate",
+        timestampSec: 5,
+        text: "My name is Ritika Gupta and I am here for the interview."
+      })
+    );
+    const stable = [
+      MeetingEventSchema.parse({
+        type: "speaking_activity",
+        participantId: "p_candidate",
+        timestampSec: 70,
+        durationSec: 30
+      }),
+      MeetingEventSchema.parse({
+        type: "transcript_chunk",
+        participantId: "p_candidate",
+        timestampSec: 80,
+        text: "My experience includes backend systems."
+      })
+    ].reduce(applyMeetingEvent, unstable);
+
+    expect(rankParticipants(unstable).state).toBe("LIKELY_CANDIDATE");
+    expect(rankParticipants(stable).state).toBe("CONFIRMED_CANDIDATE");
+  });
+
+  test("old transcript and speaking evidence decay while metadata persists", () => {
+    const baseState = createInitialSessionState(meeting, [
+      participant({ id: "p_device", displayName: "MacBook Pro" }),
+      participant({ id: "p_named", displayName: "Ritika Gupta" })
+    ]);
+    const state = [
+      MeetingEventSchema.parse({
+        type: "speaking_activity",
+        participantId: "p_device",
+        timestampSec: 10,
+        durationSec: 120
+      }),
+      MeetingEventSchema.parse({
+        type: "transcript_chunk",
+        participantId: "p_device",
+        timestampSec: 20,
+        text: "My name is Ritika Gupta and I am here for the interview."
+      }),
+      MeetingEventSchema.parse({
+        type: "participant_joined",
+        participantId: "p_named",
+        timestampSec: 500
+      })
+    ].reduce(applyMeetingEvent, baseState);
+
+    const snapshot = rankParticipants(state);
+
+    expect(snapshot.selectedCandidateId).toBe("p_named");
+  });
+
+  test("likely candidate includes human identity verification limitation", () => {
+    const state = createInitialSessionState(meeting, [
+      participant({
+        id: "p_candidate",
+        displayName: "Ritika Gupta",
+        email: "ritika@gmail.com"
+      })
+    ]);
+
+    const snapshot = rankParticipants(state);
+
+    expect(snapshot.state).toBe("LIKELY_CANDIDATE");
+    expect(snapshot.uncertainty).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("human identity verification")
+      ])
+    );
   });
 
   test("snapshot includes evidence and uncertainty explanations", () => {

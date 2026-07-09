@@ -1,0 +1,38 @@
+{
+  "id": "17_old_transcript_decays",
+  "title": "Old transcript and speech evidence decays without persistent metadata",
+  "meeting": {
+    "id": "scenario_17",
+    "candidateName": "Ritika Gupta",
+    "candidateEmail": "ritika@example.com",
+    "interviewerNames": ["Priya Sharma"],
+    "interviewerEmails": ["priya@sherlock.ai"],
+    "companyDomains": ["sherlock.ai"]
+  },
+  "participants": [
+    { "id": "p_candidate", "meetingId": "scenario_17", "displayName": "MacBook Pro" }
+  ],
+  "events": [
+    {
+      "type": "speaking_activity",
+      "participantId": "p_candidate",
+      "timestampSec": 10,
+      "durationSec": 300,
+      "source": "manual_fixture",
+      "sourceEventId": "scenario_17_speech_1"
+    },
+    {
+      "type": "transcript_chunk",
+      "participantId": "p_candidate",
+      "timestampSec": 20,
+      "text": "My name is Ritika Gupta, I am here for the interview.",
+      "source": "manual_fixture",
+      "sourceEventId": "scenario_17_transcript_1"
+    },
+    { "type": "participant_joined", "participantId": "p_candidate", "timestampSec": 500 }
+  ],
+  "expected": {
+    "candidateParticipantId": null,
+    "finalState": "INSUFFICIENT_DATA"
+  }
+}

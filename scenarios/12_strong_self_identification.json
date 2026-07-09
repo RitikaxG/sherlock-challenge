@@ -1,0 +1,53 @@
+{
+  "id": "12_strong_self_identification",
+  "title": "Strong self-identification and speech select generic device as likely candidate",
+  "meeting": {
+    "id": "scenario_12",
+    "candidateName": "Ritika Gupta",
+    "candidateEmail": "ritika@example.com",
+    "interviewerNames": ["Priya Sharma"],
+    "interviewerEmails": ["priya@sherlock.ai"],
+    "companyDomains": ["sherlock.ai"]
+  },
+  "participants": [
+    { "id": "p_candidate", "meetingId": "scenario_12", "displayName": "MacBook Pro" },
+    {
+      "id": "p_interviewer",
+      "meetingId": "scenario_12",
+      "displayName": "Priya Sharma",
+      "email": "priya@sherlock.ai",
+      "isKnownInterviewerHint": true
+    }
+  ],
+  "events": [
+    { "type": "participant_joined", "participantId": "p_interviewer", "timestampSec": 0 },
+    { "type": "participant_joined", "participantId": "p_candidate", "timestampSec": 10 },
+    {
+      "type": "speaking_activity",
+      "participantId": "p_candidate",
+      "timestampSec": 20,
+      "durationSec": 300,
+      "source": "manual_fixture",
+      "sourceEventId": "scenario_12_speech_1",
+      "speakerConfidence": 0.92,
+      "startSec": 10,
+      "endSec": 20
+    },
+    {
+      "type": "transcript_chunk",
+      "participantId": "p_candidate",
+      "timestampSec": 30,
+      "text": "My name is Ritika Gupta, I am here for the interview.",
+      "source": "manual_fixture",
+      "sourceEventId": "scenario_12_transcript_1",
+      "isFinal": true,
+      "speakerConfidence": 0.94,
+      "startSec": 28,
+      "endSec": 30
+    }
+  ],
+  "expected": {
+    "candidateParticipantId": "p_candidate",
+    "finalState": "LIKELY_CANDIDATE"
+  }
+}

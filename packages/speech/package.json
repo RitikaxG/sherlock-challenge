@@ -1,0 +1,28 @@
+{
+  "name": "@sherlock/speech",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./index.ts",
+    "./collector": "./collector.ts",
+    "./event-factory": "./event-factory.ts",
+    "./http-sink": "./http-sink.ts",
+    "./mapper": "./mapper.ts"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "check-types": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "eslint . --max-warnings 0"
+  },
+  "dependencies": {
+    "@sherlock/shared": "*"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "*",
+    "@types/node": "^22.15.30",
+    "typescript": "5.9.2",
+    "vitest": "^4.0.0"
+  }
+}

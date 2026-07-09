@@ -15,11 +15,12 @@ Sherlock's Candidate Identity Fusion Engine is designed as a monorepo with pure 
 | `packages/llm` | Missing | Provider interface and adapters that convert transcript chunks into structured role evidence. It must not make final candidate decisions. |
 | `packages/realtime` | Present as a placeholder package | Reusable realtime infrastructure only: connection registry, broadcaster, meeting subscriptions, typed broadcast helpers. It is not a deployable server. |
 | `packages/eval` | Present with scenario harness | Scenario replay, expected-vs-actual checks, evaluation metrics, and CLI reporting. |
+| `packages/speech` | Present with collector scaffolding | Converts structured upstream speech activity and transcript observations into shared meeting events. It does not record raw audio or compute candidate identity. |
 | `packages/ui` | Present as shared React/Tailwind components | Shared visual components used by web surfaces, if helpful. |
 | `packages/eslint-config` | Present | Shared lint configuration. |
 | `packages/typescript-config` | Present | Shared TypeScript configuration. |
 | `packages/tailwind-config` | Present | Shared Tailwind styles/configuration. |
-| `scenarios` | Present with 10 fixtures | JSON meeting simulations and expected outcomes for repeatable evaluation. |
+| `scenarios` | Present with 17 fixtures | JSON meeting simulations and expected outcomes for repeatable evaluation. |
 
 ## Dependency Boundaries
 
@@ -28,6 +29,7 @@ Allowed dependency direction:
 - `apps/http` may depend on `packages/shared`, `packages/core`, `packages/db`, `packages/realtime`, `packages/eval` for replay endpoints if needed, and `packages/llm` only as an evidence source.
 - `apps/web` may depend on `packages/shared` and `packages/ui`.
 - `packages/eval` may depend on `packages/shared` and `packages/core`.
+- `packages/speech` may depend on `packages/shared` only.
 - `packages/llm` may depend on `packages/shared` for transcript evidence schemas.
 - `packages/db` may depend on `packages/shared` for persisted contract types.
 - `packages/realtime` may depend on `packages/shared` for typed broadcast messages.
@@ -47,17 +49,35 @@ Forbidden dependency direction:
 - `packages/realtime` must not become a separate deployable backend.
 - `packages/llm` must not select the candidate directly.
 - `packages/db` must persist shared-shaped records and snapshots, not compute candidate identity.
+- `packages/speech` must not import core, DB, Fastify, React, realtime, audio/CV libraries, or LLM providers. It maps structured metadata into events only.
 
 ## Event Flow
 
 1. Meeting metadata and participant events arrive from a scenario replay or future live meeting adapter.
-2. `apps/http` validates and normalizes the payload using `packages/shared` schemas.
-3. `apps/http` applies the event to the current meeting session and calls `packages/core`.
-4. `packages/core` extracts deterministic evidence signals, fuses them into confidence-ranked participants, handles ambiguity, and returns explanations/uncertainty.
-5. `apps/http` persists events and score snapshots through `packages/db`.
-6. `apps/http` uses `packages/realtime` to broadcast a `candidate_state_updated` message over its WebSocket endpoint.
-7. `apps/web` renders the selected candidate, confidence timeline, participant leaderboard, evidence, uncertainty, and raw event timeline.
-8. `packages/eval` replays the same events directly through `packages/core` to measure accuracy and edge-case behavior without API/UI dependencies.
+2. Future meeting-platform, bot, or ASR sources may pass structured speech observations through `packages/speech`, which emits `speaking_activity` and `transcript_chunk` events without recording raw audio.
+3. `apps/http` validates and normalizes the payload using `packages/shared` schemas.
+4. `apps/http` applies the event to the current meeting session and calls `packages/core`.
+5. `packages/core` extracts deterministic evidence signals, fuses them into confidence-ranked participants, handles ambiguity, and returns explanations/uncertainty.
+6. `apps/http` persists events and score snapshots through `packages/db`.
+7. `apps/http` uses `packages/realtime` to broadcast a `candidate_state_updated` message over its WebSocket endpoint.
+8. `apps/web` renders the selected candidate, confidence timeline, participant leaderboard, evidence, uncertainty, and raw event timeline.
+9. `packages/eval` replays the same events directly through `packages/core` to measure accuracy and edge-case behavior without API/UI dependencies.
+
+Speech metadata flow:
+
+```text
+Meeting Platform / Bot / ASR
+        ↓
+Speech Metadata Collector
+        ↓
+speaking_activity / transcript_chunk events
+        ↓
+apps/http ingestion endpoint
+        ↓
+packages/core
+        ↓
+CandidateStateSnapshot
+```
 
 ## Mermaid Diagram
 
@@ -70,6 +90,7 @@ flowchart TD
   HTTP --> Realtime["packages/realtime<br/>hub + broadcaster + subscriptions"]
   Realtime --> Web["apps/web<br/>dashboard client"]
   LLM["packages/llm<br/>transcript evidence only"] -. structured evidence .-> HTTP
+  Speech["packages/speech<br/>speech metadata collector"] --> HTTP
   Scenario --> Eval["packages/eval<br/>scenario replay + metrics"]
   Eval --> Core
   Shared --> Core
@@ -85,6 +106,7 @@ flowchart LR
   HTTP --> DB["packages/db"]
   HTTP --> Realtime["packages/realtime"]
   HTTP --> LLM["packages/llm"]
+  HTTP --> Speech["packages/speech"]
   Web["apps/web"] --> Shared
   Web --> UI["packages/ui"]
   Eval["packages/eval"] --> Shared
@@ -93,6 +115,7 @@ flowchart LR
   DB --> Shared
   Realtime --> Shared
   LLM --> Shared
+  Speech --> Shared
 ```
 
 ## Why `apps/http` Stays Thin

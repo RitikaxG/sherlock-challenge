@@ -37,7 +37,9 @@ export function extractParticipantMetadataSignals(
         direction: "positive",
         strength: 0.95,
         reason: "Participant display name exactly matches the candidate name.",
-        source: "metadata"
+        source: "metadata",
+        specificity: "strong",
+        isPersistent: true
       })
     );
   } else if (includesNameToken(displayName, meeting.candidateName)) {
@@ -48,7 +50,9 @@ export function extractParticipantMetadataSignals(
         direction: "positive",
         strength: 0.45 + nameTokenOverlap(displayName, meeting.candidateName) * 0.25,
         reason: "Participant display name shares tokens with the candidate name.",
-        source: "metadata"
+        source: "metadata",
+        specificity: "medium",
+        isPersistent: true
       })
     );
   }
@@ -61,7 +65,9 @@ export function extractParticipantMetadataSignals(
         direction: "positive",
         strength: 1,
         reason: "Participant email exactly matches the candidate email.",
-        source: "metadata"
+        source: "metadata",
+        specificity: "strong",
+        isPersistent: true
       })
     );
   }
@@ -74,7 +80,9 @@ export function extractParticipantMetadataSignals(
         direction: "neutral",
         strength: 0.2,
         reason: "Participant display name appears to be a generic device name.",
-        source: "metadata"
+        source: "metadata",
+        specificity: "weak",
+        isPersistent: true
       })
     );
   }
@@ -87,7 +95,9 @@ export function extractParticipantMetadataSignals(
         direction: "negative",
         strength: 0.8,
         reason: "Participant display name resembles a known interviewer name.",
-        source: "metadata"
+        source: "metadata",
+        specificity: "strong",
+        isPersistent: true
       })
     );
   }
@@ -103,7 +113,9 @@ export function extractParticipantMetadataSignals(
         direction: "negative",
         strength: 0.9,
         reason: "Participant email matches a known interviewer email.",
-        source: "metadata"
+        source: "metadata",
+        specificity: "strong",
+        isPersistent: true
       })
     );
   }
@@ -121,7 +133,9 @@ export function extractParticipantMetadataSignals(
         strength: 0.55,
         reason:
           "Participant email uses the company domain while the candidate email does not.",
-        source: "metadata"
+        source: "metadata",
+        specificity: "medium",
+        isPersistent: true
       })
     );
   }

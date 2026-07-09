@@ -15,8 +15,8 @@
   "events": [
     { "type": "participant_joined", "participantId": "p_one", "timestampSec": 10 },
     { "type": "participant_joined", "participantId": "p_two", "timestampSec": 12 },
-    { "type": "transcript_chunk", "participantId": "p_one", "timestampSec": 60, "text": "My project involved backend services." },
-    { "type": "transcript_chunk", "participantId": "p_two", "timestampSec": 62, "text": "My project involved backend services." }
+    { "type": "transcript_chunk", "participantId": "p_one", "timestampSec": 60, "text": "My name is Ritika and my project involved backend services." },
+    { "type": "transcript_chunk", "participantId": "p_two", "timestampSec": 62, "text": "My name is Ritika and my project involved backend services." }
   ],
   "expected": {
     "candidateParticipantId": null,

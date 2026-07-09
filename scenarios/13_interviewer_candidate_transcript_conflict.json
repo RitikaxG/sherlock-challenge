@@ -1,8 +1,8 @@
 {
-  "id": "02_generic_device_name",
-  "title": "Generic device remains insufficient with weak transcript evidence",
+  "id": "13_interviewer_candidate_transcript_conflict",
+  "title": "Known interviewer saying candidate-like phrase is contradicted",
   "meeting": {
-    "id": "scenario_02",
+    "id": "scenario_13",
     "candidateName": "Ritika Gupta",
     "candidateEmail": "ritika@example.com",
     "interviewerNames": ["Priya Sharma"],
@@ -10,10 +10,9 @@
     "companyDomains": ["sherlock.ai"]
   },
   "participants": [
-    { "id": "p_candidate", "meetingId": "scenario_02", "displayName": "MacBook Pro" },
     {
       "id": "p_interviewer",
-      "meetingId": "scenario_02",
+      "meetingId": "scenario_13",
       "displayName": "Priya Sharma",
       "email": "priya@sherlock.ai",
       "isKnownInterviewerHint": true
@@ -21,9 +20,14 @@
   ],
   "events": [
     { "type": "participant_joined", "participantId": "p_interviewer", "timestampSec": 0 },
-    { "type": "participant_joined", "participantId": "p_candidate", "timestampSec": 40 },
-    { "type": "speaking_activity", "participantId": "p_candidate", "timestampSec": 80, "durationSec": 120 },
-    { "type": "transcript_chunk", "participantId": "p_candidate", "timestampSec": 90, "text": "My project used TypeScript recently." }
+    {
+      "type": "transcript_chunk",
+      "participantId": "p_interviewer",
+      "timestampSec": 20,
+      "text": "I am the candidate.",
+      "source": "manual_fixture",
+      "sourceEventId": "scenario_13_transcript_1"
+    }
   ],
   "expected": {
     "candidateParticipantId": null,

@@ -18,16 +18,38 @@ export type SignalKind =
   | "webcam_on"
   | "screen_share"
   | "candidate_transcript_phrase"
-  | "interviewer_transcript_phrase";
+  | "interviewer_transcript_phrase"
+  | "candidate_self_identification"
+  | "candidate_name_spoken"
+  | "candidate_experience_statement"
+  | "candidate_project_statement"
+  | "interviewer_question_prompt"
+  | "interviewer_role_description"
+  | "interviewer_control_language"
+  | "transcript_role_uncertain"
+  | "candidate_interviewer_metadata_conflict"
+  | "candidate_transcript_interviewer_metadata_conflict"
+  | "mixed_transcript_role_conflict"
+  | "face_visible"
+  | "multiple_faces_detected"
+  | "face_match_score"
+  | "voice_consistency_score"
+  | "active_speaker_confidence"
+  | "speaker_overlap_detected"
+  | "background_voice_detected"
+  | "audio_quality_low";
 
 export type SignalDirection = "positive" | "negative" | "neutral";
+export type SignalSpecificity = "weak" | "medium" | "strong";
 
 export type SignalSource =
   | "metadata"
   | "event"
   | "behavior"
   | "transcript"
-  | "interviewer_exclusion";
+  | "interviewer_exclusion"
+  | "contradiction"
+  | "audio_video";
 
 export type ExtractedSignal = {
   readonly participantId: string;
@@ -36,6 +58,11 @@ export type ExtractedSignal = {
   readonly strength: number;
   readonly reason: string;
   readonly source: SignalSource;
+  readonly specificity?: SignalSpecificity;
+  readonly timestampSec?: number;
+  readonly sourceEventIds?: readonly string[];
+  readonly expiresAtSec?: number;
+  readonly isPersistent?: boolean;
 };
 
 export type SignalExtractionContext = {

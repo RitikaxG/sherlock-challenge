@@ -46,7 +46,9 @@ export function extractInterviewerExclusionSignals(
           direction: "negative",
           strength: 0.95,
           reason: "Participant email matches a known interviewer email.",
-          source: "interviewer_exclusion"
+          source: "interviewer_exclusion",
+          specificity: "strong",
+          isPersistent: true
         })
       );
     }
@@ -63,7 +65,9 @@ export function extractInterviewerExclusionSignals(
           direction: "negative",
           strength: 0.85,
           reason: "Participant name matches a known interviewer name.",
-          source: "interviewer_exclusion"
+          source: "interviewer_exclusion",
+          specificity: "strong",
+          isPersistent: true
         })
       );
     }
@@ -81,7 +85,9 @@ export function extractInterviewerExclusionSignals(
           strength: 0.65,
           reason:
             "Participant email uses a company domain while the candidate email appears external or different.",
-          source: "interviewer_exclusion"
+          source: "interviewer_exclusion",
+          specificity: "medium",
+          isPersistent: true
         })
       );
     }

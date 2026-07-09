@@ -1,0 +1,27 @@
+{
+  "id": "14_candidate_name_interviewer_email_conflict",
+  "title": "Candidate name with interviewer email creates metadata conflict",
+  "meeting": {
+    "id": "scenario_14",
+    "candidateName": "Ritika Gupta",
+    "candidateEmail": "ritika@example.com",
+    "interviewerNames": ["Priya Sharma"],
+    "interviewerEmails": ["priya@sherlock.ai"],
+    "companyDomains": ["sherlock.ai"]
+  },
+  "participants": [
+    {
+      "id": "p_conflicted",
+      "meetingId": "scenario_14",
+      "displayName": "Ritika Gupta",
+      "email": "priya@sherlock.ai"
+    }
+  ],
+  "events": [
+    { "type": "participant_joined", "participantId": "p_conflicted", "timestampSec": 0 }
+  ],
+  "expected": {
+    "candidateParticipantId": null,
+    "finalState": "INSUFFICIENT_DATA"
+  }
+}

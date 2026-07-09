@@ -16,6 +16,9 @@ export type FusedParticipantScore = ParticipantScore & {
   readonly neutralSignals: readonly WeightedSignal[];
   readonly signals: readonly WeightedSignal[];
   readonly hasStrongInterviewerExclusion: boolean;
+  readonly hasStrongContradiction: boolean;
+  readonly confirmationEligible: boolean;
+  readonly confirmationBlockReason: string | null;
 };
 
 export type CandidateFusionResult = {

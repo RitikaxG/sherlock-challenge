@@ -1,4 +1,5 @@
 import { createSignal } from "./evidence.ts";
+import { defaultFusionConfig } from "./fusion-config.ts";
 import { safeNumber } from "./helpers.ts";
 import type { CandidateSessionState } from "./session-state.ts";
 import type { ExtractedSignal } from "./signal-types.ts";
@@ -16,6 +17,26 @@ export function extractBehaviorSignals(
     const speakingDurationSec = safeNumber(
       state.participantSpeakingDurationSec[participant.id]
     );
+    const latestSpeakingEvent = state.events
+      .filter(
+        (event) =>
+          event.type === "speaking_activity" &&
+          event.participantId === participant.id
+      )
+      .at(-1);
+    const latestWebcamEvent = state.events
+      .filter(
+        (event) =>
+          event.type === "webcam_changed" && event.participantId === participant.id
+      )
+      .at(-1);
+    const latestScreenShareEvent = state.events
+      .filter(
+        (event) =>
+          event.type === "screen_share_changed" &&
+          event.participantId === participant.id
+      )
+      .at(-1);
 
     if (speakingDurationSec > 0) {
       signals.push(
@@ -25,7 +46,18 @@ export function extractBehaviorSignals(
           direction: "positive",
           strength: Math.min(0.35, 0.1 + speakingDurationSec / 600),
           reason: "Participant has spoken during the meeting.",
-          source: "behavior"
+          source: "behavior",
+          specificity: "weak",
+          timestampSec: latestSpeakingEvent?.timestampSec,
+          sourceEventIds: latestSpeakingEvent?.sourceEventId
+            ? [latestSpeakingEvent.sourceEventId]
+            : undefined,
+          expiresAtSec:
+            latestSpeakingEvent?.timestampSec !== undefined
+              ? latestSpeakingEvent.timestampSec +
+                defaultFusionConfig.behaviorSignalTtlSec
+              : undefined,
+          isPersistent: false
         })
       );
     } else if (latestTimestampSec >= 600) {
@@ -37,7 +69,10 @@ export function extractBehaviorSignals(
           strength: 0.15,
           reason:
             "Participant has no speaking activity after enough meeting time has elapsed.",
-          source: "behavior"
+          source: "behavior",
+          specificity: "weak",
+          timestampSec: latestTimestampSec,
+          isPersistent: false
         })
       );
     }
@@ -50,7 +85,15 @@ export function extractBehaviorSignals(
           direction: "positive",
           strength: 0.12,
           reason: "Participant has webcam enabled.",
-          source: "behavior"
+          source: "behavior",
+          specificity: "weak",
+          timestampSec: latestWebcamEvent?.timestampSec,
+          expiresAtSec:
+            latestWebcamEvent?.timestampSec !== undefined
+              ? latestWebcamEvent.timestampSec +
+                defaultFusionConfig.behaviorSignalTtlSec
+              : undefined,
+          isPersistent: false
         })
       );
     }
@@ -63,7 +106,15 @@ export function extractBehaviorSignals(
           direction: "positive",
           strength: 0.1,
           reason: "Participant is sharing their screen.",
-          source: "behavior"
+          source: "behavior",
+          specificity: "weak",
+          timestampSec: latestScreenShareEvent?.timestampSec,
+          expiresAtSec:
+            latestScreenShareEvent?.timestampSec !== undefined
+              ? latestScreenShareEvent.timestampSec +
+                defaultFusionConfig.behaviorSignalTtlSec
+              : undefined,
+          isPersistent: false
         })
       );
     }

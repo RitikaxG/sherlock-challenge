@@ -11,6 +11,18 @@ import { extractAllSignals } from "./all-signals.ts";
 import { getParticipantDisplayName, type CandidateSessionState } from "./session-state.ts";
 import type { ExtractedSignal } from "./signal-types.ts";
 
+function currentTimestampSec(state: CandidateSessionState) {
+  return Math.max(0, ...state.events.map((event) => event.timestampSec));
+}
+
+function activeSignal(signal: ExtractedSignal, timestampSec: number) {
+  return (
+    signal.isPersistent ||
+    signal.expiresAtSec === undefined ||
+    signal.expiresAtSec >= timestampSec
+  );
+}
+
 function weightSignal(signal: ExtractedSignal, config: FusionConfig): WeightedSignal {
   const sourceWeight = config.sourceWeights[signal.source];
 
@@ -35,11 +47,75 @@ function weightSignal(signal: ExtractedSignal, config: FusionConfig): WeightedSi
   };
 }
 
+function confirmationStatus(
+  signals: readonly WeightedSignal[],
+  config: FusionConfig
+) {
+  const positiveSignals = signals.filter((signal) => signal.weightedImpact > 0);
+  const timestampedPositiveSignals = positiveSignals.filter(
+    (signal) => signal.timestampSec !== undefined
+  );
+  const firstTimestamp = timestampedPositiveSignals
+    .map((signal) => signal.timestampSec as number)
+    .sort((left, right) => left - right)[0];
+  const lastTimestamp = timestampedPositiveSignals
+    .map((signal) => signal.timestampSec as number)
+    .sort((left, right) => right - left)[0];
+  const stableSec =
+    firstTimestamp !== undefined && lastTimestamp !== undefined
+      ? lastTimestamp - firstTimestamp
+      : 0;
+  const evidenceEvents = new Set(
+    positiveSignals.flatMap((signal) => signal.sourceEventIds ?? [])
+  );
+  const timestampedEventCount = timestampedPositiveSignals.length;
+  const evidenceEventCount = Math.max(evidenceEvents.size, timestampedEventCount);
+  const distinctSources = new Set(
+    positiveSignals
+      .filter((signal) => signal.source !== "contradiction")
+      .map((signal) => signal.source)
+  ).size;
+
+  if (stableSec < config.thresholds.confirmationMinStableSec) {
+    return {
+      eligible: false,
+      reason:
+        "Candidate evidence is strong but not stable long enough for confirmation."
+    };
+  }
+
+  if (evidenceEventCount < config.thresholds.confirmationMinEvidenceEvents) {
+    return {
+      eligible: false,
+      reason:
+        "Candidate evidence is strong but does not span enough evidence events for confirmation."
+    };
+  }
+
+  if (
+    distinctSources < config.thresholds.confirmationMinDistinctSignalSources
+  ) {
+    return {
+      eligible: false,
+      reason:
+        "Candidate evidence is strong but does not span enough distinct signal sources for confirmation."
+    };
+  }
+
+  return {
+    eligible: true,
+    reason: null
+  };
+}
+
 export function fuseCandidateSignals(
   state: CandidateSessionState,
   config: FusionConfig = defaultFusionConfig
 ): CandidateFusionResult {
-  const signals = extractAllSignals(state).map((signal) =>
+  const nowSec = currentTimestampSec(state);
+  const signals = extractAllSignals(state).filter((signal) =>
+    activeSignal(signal, nowSec)
+  ).map((signal) =>
     weightSignal(signal, config)
   );
 
@@ -63,6 +139,13 @@ export function fuseCandidateSignals(
           signal.direction === "negative" &&
           signal.strength >= config.thresholds.strongInterviewerExclusion
       );
+      const hasStrongContradiction = participantSignals.some(
+        (signal) =>
+          signal.source === "contradiction" &&
+          signal.direction === "negative" &&
+          signal.strength >= config.thresholds.strongContradiction
+      );
+      const confirmation = confirmationStatus(participantSignals, config);
 
       return {
         participantId: participant.id,
@@ -79,7 +162,10 @@ export function fuseCandidateSignals(
           (signal) => signal.direction === "neutral"
         ),
         signals: participantSignals,
-        hasStrongInterviewerExclusion
+        hasStrongInterviewerExclusion,
+        hasStrongContradiction,
+        confirmationEligible: confirmation.eligible,
+        confirmationBlockReason: confirmation.reason
       };
     }
   );

@@ -13,7 +13,7 @@ describe("@sherlock/eval scenario harness", () => {
   it("loads and validates the root scenario fixtures", async () => {
     const scenarios = await loadScenarios();
 
-    expect(scenarios).toHaveLength(10);
+    expect(scenarios).toHaveLength(17);
     expect(scenarios.map((scenario) => scenario.id)).toContain(
       "08_two_unknown_ambiguous"
     );
@@ -47,18 +47,48 @@ describe("@sherlock/eval scenario harness", () => {
     expect(insufficient?.actualState).toBe("INSUFFICIENT_DATA");
   });
 
+  it("surfaces hardening uncertainty messages in scenario results", async () => {
+    const summary = evaluateScenarios(await loadScenarios());
+    const contradiction = summary.replays.find(
+      (replay) =>
+        replay.scenarioId === "13_interviewer_candidate_transcript_conflict"
+    );
+    const unstable = summary.replays.find(
+      (replay) => replay.scenarioId === "15_no_instant_confirmation"
+    );
+    const confirmed = summary.replays.find(
+      (replay) => replay.scenarioId === "16_stable_candidate_confirmation"
+    );
+
+    expect(contradiction?.finalSnapshot.uncertainty).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("contradictory candidate and interviewer evidence")
+      ])
+    );
+    expect(unstable?.finalSnapshot.uncertainty).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("not stable long enough")
+      ])
+    );
+    expect(confirmed?.finalSnapshot.uncertainty).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("human identity verification")
+      ])
+    );
+  });
+
   it("reports aggregate metrics for all scenarios", async () => {
     const summary = evaluateScenarios(await loadScenarios());
     const report = formatEvaluationReport(summary);
 
-    expect(summary.aggregate.totalScenarios).toBe(10);
-    expect(summary.aggregate.passedScenarios).toBe(10);
+    expect(summary.aggregate.totalScenarios).toBe(17);
+    expect(summary.aggregate.passedScenarios).toBe(17);
     expect(summary.aggregate.averageFinalConfidence).toBeGreaterThan(0);
     expect(summary.aggregate.averageEvidenceCount).toBeGreaterThan(0);
     expect(summary.results[0]?.evidenceCount).toBeGreaterThan(0);
     expect(summary.results[0]?.uncertaintyCount).toBeGreaterThanOrEqual(0);
     expect(report).toContain("Sherlock Scenario Evaluation");
-    expect(report).toContain("10/10 passed");
+    expect(report).toContain("17/17 passed");
     expect(report).toContain("Avg final confidence");
     expect(report).toContain("evidence");
   });

@@ -13,7 +13,7 @@ Interview fraud detectors are only useful when Sherlock knows which meeting part
 - No heavy autonomous multi-agent framework.
 - No committed secrets, API keys, or real candidate data.
 - No black-box LLM final decision. LLM output can add transcript evidence only.
-- No WebSocket behavior, dashboard, or LLM logic in the current evaluation-harness phase.
+- No WebSocket behavior, dashboard, real speech/audio recording, CV, fraud verdicts, or LLM provider logic in the current core-hardening phase.
 
 ## Architecture Overview
 
@@ -25,6 +25,7 @@ The target architecture is a Bun/Turborepo monorepo with pure identity logic at 
 - `packages/llm`: structured transcript role evidence adapters with deterministic fallback rules.
 - `packages/realtime`: reusable WebSocket infrastructure for connection registry, broadcaster, meeting subscriptions, and typed broadcast helpers.
 - `packages/eval`: scenario replay, metrics, expected-vs-actual checks, and CLI reporting.
+- `packages/speech`: speech metadata collector scaffolding that maps upstream speech/transcript observations into shared meeting events.
 - `apps/http`: deployable backend server that composes HTTP routes and a WebSocket endpoint, calls packages, persists snapshots, and broadcasts live candidate state.
 - `apps/web`: real-time dashboard for scenario replay, participant leaderboard, evidence, uncertainty, confidence timeline, and evaluation summaries.
 - `scenarios`: replayable JSON edge cases with expected outcomes.
@@ -41,6 +42,7 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for package responsibilities, event flo
 | 3 | Pure core domain model and deterministic signal extractors | Done |
 | 4 | Fusion engine, confidence, ambiguity, and explanations | Done |
 | 5 | Scenario simulator and evaluation harness | Done |
+| 5.5 | Core hardening, transcript specificity, temporal stability, evidence decay, and speech metadata scaffolding | Done |
 | 6 | Fastify ingestion and WebSocket broadcast | Later |
 | 7 | Optional LLM transcript classifier evidence package | Later |
 | 8 | React real-time dashboard | Later |
@@ -59,6 +61,7 @@ This repository currently starts from a Turborepo Tailwind template and contains
 - `packages/db`: Prisma/Postgres schema, client helper, and repository plumbing.
 - `packages/realtime`: placeholder realtime infrastructure package.
 - `packages/eval`: scenario replay, metrics, expected-vs-actual checks, and CLI reporting.
+- `packages/speech`: speech metadata mapping, event factory, collector, and optional injected HTTP sink.
 - `packages/eslint-config`: shared ESLint configuration.
 - `packages/typescript-config`: shared TypeScript configuration.
 - `packages/tailwind-config`: shared Tailwind styles.
@@ -91,6 +94,8 @@ bun --filter '@sherlock/realtime' check-types
 bun --filter '@sherlock/eval' check-types
 bun --filter '@sherlock/eval' test
 bun --filter '@sherlock/eval' eval
+bun --filter '@sherlock/speech' check-types
+bun --filter '@sherlock/speech' test
 bun --filter '@sherlock/db' db:generate
 bun --filter '@sherlock/db' db:migrate
 bun --filter '@sherlock/db' check-types
@@ -106,4 +111,4 @@ docker compose up -d
 
 ## Next Implementation Direction
 
-The recommended next phase is Phase 6: add Fastify ingestion and WebSocket broadcast in `apps/http`, with realtime helpers from `packages/realtime`, without moving identity decision logic out of `packages/core`.
+The recommended next phase is Phase 6: add Fastify ingestion and WebSocket broadcast in `apps/http`, with realtime helpers from `packages/realtime`, without moving identity decision logic out of `packages/core`. The engine identifies the candidate participant stream; it does not yet verify the human identity of that stream or make cheating/fraud verdicts.

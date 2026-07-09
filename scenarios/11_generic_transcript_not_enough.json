@@ -1,0 +1,30 @@
+{
+  "id": "11_generic_transcript_not_enough",
+  "title": "Generic transcript phrase alone does not select candidate",
+  "meeting": {
+    "id": "scenario_11",
+    "candidateName": "Ritika Gupta",
+    "candidateEmail": "ritika@example.com",
+    "interviewerNames": ["Priya Sharma"],
+    "interviewerEmails": ["priya@sherlock.ai"],
+    "companyDomains": ["sherlock.ai"]
+  },
+  "participants": [
+    { "id": "p_candidate", "meetingId": "scenario_11", "displayName": "MacBook Pro" }
+  ],
+  "events": [
+    { "type": "participant_joined", "participantId": "p_candidate", "timestampSec": 0 },
+    {
+      "type": "transcript_chunk",
+      "participantId": "p_candidate",
+      "timestampSec": 20,
+      "text": "My project used TypeScript.",
+      "source": "manual_fixture",
+      "sourceEventId": "scenario_11_transcript_1"
+    }
+  ],
+  "expected": {
+    "candidateParticipantId": null,
+    "finalState": "INSUFFICIENT_DATA"
+  }
+}

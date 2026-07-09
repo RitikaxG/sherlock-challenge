@@ -56,7 +56,10 @@ export function extractEventSignals(state: CandidateSessionState): ExtractedSign
             direction: "positive",
             strength: 0.25,
             reason: "Participant joined close to the scheduled start time.",
-            source: "event"
+            source: "event",
+            specificity: "weak",
+            timestampSec: joinedAtSec,
+            isPersistent: false
           })
         );
       } else if (joinedAtSec < startSec - 900) {
@@ -67,7 +70,10 @@ export function extractEventSignals(state: CandidateSessionState): ExtractedSign
             direction: "neutral",
             strength: 0.1,
             reason: "Participant joined much earlier than the scheduled start.",
-            source: "event"
+            source: "event",
+            specificity: "weak",
+            timestampSec: joinedAtSec,
+            isPersistent: false
           })
         );
       }
@@ -81,7 +87,10 @@ export function extractEventSignals(state: CandidateSessionState): ExtractedSign
           direction: "positive",
           strength: 0.2,
           reason: "Participant joined after multiple known interviewers.",
-          source: "event"
+          source: "event",
+          specificity: "weak",
+          timestampSec: joinedAtSec,
+          isPersistent: false
         })
       );
     }
@@ -99,7 +108,16 @@ export function extractEventSignals(state: CandidateSessionState): ExtractedSign
           strength: 0.45,
           reason:
             "Participant changed from a generic device name to a more identifying display name.",
-          source: "event"
+          source: "event",
+          specificity: "medium",
+          timestampSec: state.events
+            .filter(
+              (event) =>
+                event.type === "display_name_changed" &&
+                event.participantId === participant.id
+            )
+            .at(-1)?.timestampSec,
+          isPersistent: true
         })
       );
     }

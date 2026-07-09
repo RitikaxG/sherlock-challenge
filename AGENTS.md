@@ -25,6 +25,7 @@ These rules apply to future Codex work in this repository.
 - `packages/core` owns candidate scoring, signal extraction, confidence, state machine, and explanation logic.
 - `packages/realtime` owns reusable WebSocket/realtime infrastructure only: connection registry, broadcaster, meeting subscriptions, and typed broadcast helpers.
 - `packages/eval` owns scenario replay, metrics, expected-vs-actual checks, and CLI reporting.
+- `packages/speech` converts upstream speech activity and transcript observations into shared `MeetingEvent` objects. It must not record raw audio or compute candidate identity.
 - `packages/llm` owns transcript evidence extraction only. It must not directly select the candidate.
 - `packages/db` owns Prisma schema, migrations, typed DB client, and repositories.
 - `packages/db` stores events, evidence, score snapshots, and scenario results, but it must not compute candidate identity.
@@ -34,7 +35,7 @@ These rules apply to future Codex work in this repository.
 
 ## Current Phase Guardrail
 
-Phase 5 is scenario simulation and evaluation harness only.
+Phase 5.5 is core hardening, transcript specificity, temporal stability, evidence decay, and speech metadata collector scaffolding only.
 
 Do not implement yet:
 
@@ -42,6 +43,7 @@ Do not implement yet:
 - Fastify route behavior
 - dashboard
 - LLM logic/provider
+- raw audio recording, real meeting-platform integration, CV/person detection, voice biometrics, or fraud verdicts
 
 For `packages/eval`:
 
@@ -50,6 +52,15 @@ For `packages/eval`:
 - Scenario fixtures should stay synthetic and must not contain real candidate data.
 - The eval package may depend on `@sherlock/shared`, `@sherlock/core`, and Node/Bun filesystem APIs only.
 - It must not import DB, Fastify/API, realtime/WebSocket, React/UI, or LLM packages.
+
+For `packages/speech`:
+
+- Convert structured upstream speech/transcript observations into shared `MeetingEvent` objects.
+- Resolve participants through stream IDs, speaker labels, or external user IDs.
+- Use dependency-injected sinks/fetches for testability.
+- Do not import `@sherlock/core`, `@sherlock/db`, React, Fastify, WebSocket libraries, audio/CV libraries, or LLM providers.
+- Do not record raw audio or decide who the candidate is.
+- `apps/http` will later receive generated events and call `packages/core`.
 
 ## Commands
 
@@ -68,6 +79,7 @@ When package-specific commands are added, prefer Bun workspace filters, for exam
 bun --filter '@sherlock/core' test
 bun --filter '@sherlock/eval' test
 bun --filter '@sherlock/eval' eval
+bun --filter '@sherlock/speech' test
 ```
 
 ## Testing Expectations

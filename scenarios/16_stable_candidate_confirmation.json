@@ -1,0 +1,59 @@
+{
+  "id": "16_stable_candidate_confirmation",
+  "title": "Stable candidate evidence across time confirms candidate stream",
+  "meeting": {
+    "id": "scenario_16",
+    "candidateName": "Ritika Gupta",
+    "candidateEmail": "ritika@example.com",
+    "interviewerNames": ["Priya Sharma"],
+    "interviewerEmails": ["priya@sherlock.ai"],
+    "companyDomains": ["sherlock.ai"]
+  },
+  "participants": [
+    {
+      "id": "p_candidate",
+      "meetingId": "scenario_16",
+      "displayName": "Ritika Gupta",
+      "email": "ritika@example.com"
+    }
+  ],
+  "events": [
+    { "type": "participant_joined", "participantId": "p_candidate", "timestampSec": 0 },
+    {
+      "type": "speaking_activity",
+      "participantId": "p_candidate",
+      "timestampSec": 10,
+      "durationSec": 180,
+      "source": "manual_fixture",
+      "sourceEventId": "scenario_16_speech_1"
+    },
+    {
+      "type": "transcript_chunk",
+      "participantId": "p_candidate",
+      "timestampSec": 20,
+      "text": "My name is Ritika Gupta, I am here for the interview.",
+      "source": "manual_fixture",
+      "sourceEventId": "scenario_16_transcript_1"
+    },
+    {
+      "type": "speaking_activity",
+      "participantId": "p_candidate",
+      "timestampSec": 90,
+      "durationSec": 60,
+      "source": "manual_fixture",
+      "sourceEventId": "scenario_16_speech_2"
+    },
+    {
+      "type": "transcript_chunk",
+      "participantId": "p_candidate",
+      "timestampSec": 100,
+      "text": "My experience includes backend systems.",
+      "source": "manual_fixture",
+      "sourceEventId": "scenario_16_transcript_2"
+    }
+  ],
+  "expected": {
+    "candidateParticipantId": "p_candidate",
+    "finalState": "CONFIRMED_CANDIDATE"
+  }
+}
