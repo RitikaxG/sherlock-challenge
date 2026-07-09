@@ -10,6 +10,7 @@ import {
   extractInterviewerExclusionSignals,
   extractMetadataSignals,
   extractTranscriptSignals,
+  fuseCandidateSignals,
   rankParticipants
 } from "./index.ts";
 import {
@@ -235,9 +236,13 @@ describe("@sherlock/core Phase 3 signal extraction", () => {
     );
   });
 
-  test("rankParticipants aggregates signals but keeps placeholder state", () => {
+  test("strong candidate match selects the candidate with high confidence", () => {
     const state = createInitialSessionState(meeting, [
-      participant({ id: "p_candidate", displayName: "Ritika Gupta" }),
+      participant({
+        id: "p_candidate",
+        displayName: "Ritika Gupta",
+        email: "ritika@gmail.com"
+      }),
       participant({
         id: "p_interviewer",
         displayName: "Priya Sharma",
@@ -247,10 +252,164 @@ describe("@sherlock/core Phase 3 signal extraction", () => {
 
     const snapshot = rankParticipants(state);
 
+    expect(["LIKELY_CANDIDATE", "CONFIRMED_CANDIDATE"]).toContain(
+      snapshot.state
+    );
+    expect(snapshot.selectedCandidateId).toBe("p_candidate");
+    expect(snapshot.confidence).toBeGreaterThanOrEqual(0.75);
+  });
+
+  test("generic device name only stays insufficient", () => {
+    const state = createInitialSessionState(meeting, [
+      participant({ id: "p_device", displayName: "MacBook Pro" })
+    ]);
+
+    const snapshot = rankParticipants(state);
+
     expect(snapshot.state).toBe("INSUFFICIENT_DATA");
     expect(snapshot.selectedCandidateId).toBeNull();
-    expect(snapshot.evidence.length).toBeGreaterThan(0);
+    expect(snapshot.confidence).toBe(0);
+  });
+
+  test("generic device that later changes name and speaks can be selected", () => {
+    const baseState = createInitialSessionState(meeting, [
+      participant({ id: "p_candidate", displayName: "MacBook Pro" }),
+      participant({ id: "p_other", displayName: "Guest" })
+    ]);
+    const state = [
+      MeetingEventSchema.parse({
+        type: "display_name_changed",
+        participantId: "p_candidate",
+        timestampSec: 30,
+        newDisplayName: "Ritika Gupta"
+      }),
+      MeetingEventSchema.parse({
+        type: "speaking_activity",
+        participantId: "p_candidate",
+        timestampSec: 60,
+        durationSec: 120
+      }),
+      MeetingEventSchema.parse({
+        type: "transcript_chunk",
+        participantId: "p_candidate",
+        timestampSec: 70,
+        text: "My name is Ritika and I worked on my project."
+      })
+    ].reduce(applyMeetingEvent, baseState);
+
+    const snapshot = rankParticipants(state);
+
+    expect(snapshot.selectedCandidateId).toBe("p_candidate");
+    expect(snapshot.confidence).toBeGreaterThanOrEqual(0.7);
+  });
+
+  test("known interviewer exclusion prevents selecting the interviewer", () => {
+    const baseState = createInitialSessionState(meeting, [
+      participant({
+        id: "p_candidate",
+        displayName: "Ritika",
+        email: "ritika@gmail.com"
+      }),
+      participant({
+        id: "p_interviewer",
+        displayName: "Priya Sharma",
+        email: "priya@sherlock.ai"
+      })
+    ]);
+    const state = applyMeetingEvent(
+      baseState,
+      MeetingEventSchema.parse({
+        type: "speaking_activity",
+        participantId: "p_interviewer",
+        timestampSec: 120,
+        durationSec: 600
+      })
+    );
+
+    const snapshot = rankParticipants(state);
+
+    expect(snapshot.selectedCandidateId).toBe("p_candidate");
     expect(snapshot.participants[0]?.participantId).toBe("p_candidate");
+  });
+
+  test("similar evidence across two participants becomes ambiguous", () => {
+    const ambiguousMeeting = MeetingSchema.parse({
+      ...meeting,
+      candidateName: "Ritika Gupta",
+      candidateEmail: undefined
+    });
+    const state = createInitialSessionState(ambiguousMeeting, [
+      participant({ id: "p_one", displayName: "Ritika" }),
+      participant({ id: "p_two", displayName: "Ritika" })
+    ]);
+    const withTranscript = [
+      MeetingEventSchema.parse({
+        type: "transcript_chunk",
+        participantId: "p_one",
+        timestampSec: 40,
+        text: "My project involved backend systems."
+      }),
+      MeetingEventSchema.parse({
+        type: "transcript_chunk",
+        participantId: "p_two",
+        timestampSec: 42,
+        text: "My project involved backend systems."
+      })
+    ].reduce(applyMeetingEvent, state);
+
+    const snapshot = rankParticipants(withTranscript);
+
+    expect(snapshot.state).toBe("AMBIGUOUS");
+    expect(snapshot.selectedCandidateId).toBeNull();
+  });
+
+  test("transcript evidence lifts candidate and lowers interviewer", () => {
+    const baseState = createInitialSessionState(meeting, [
+      participant({ id: "p_candidate", displayName: "MacBook Pro" }),
+      participant({ id: "p_interviewer", displayName: "Guest" })
+    ]);
+    const state = [
+      MeetingEventSchema.parse({
+        type: "transcript_chunk",
+        participantId: "p_candidate",
+        timestampSec: 40,
+        text: "I am the candidate and my experience includes backend work."
+      }),
+      MeetingEventSchema.parse({
+        type: "transcript_chunk",
+        participantId: "p_interviewer",
+        timestampSec: 50,
+        text: "Tell me about yourself and I will ask the next question."
+      })
+    ].reduce(applyMeetingEvent, baseState);
+
+    const fusion = fuseCandidateSignals(state);
+    const candidate = fusion.participantScores.find(
+      (score) => score.participantId === "p_candidate"
+    );
+    const interviewer = fusion.participantScores.find(
+      (score) => score.participantId === "p_interviewer"
+    );
+
+    expect(candidate?.rawScore).toBeGreaterThan(0);
+    expect(interviewer?.rawScore).toBeLessThan(0);
+    expect(candidate?.confidence).toBeGreaterThan(interviewer?.confidence ?? 0);
+  });
+
+  test("snapshot includes evidence and uncertainty explanations", () => {
+    const state = createInitialSessionState(meeting, [
+      participant({ id: "p_candidate", displayName: "Ritika Gupta" }),
+      participant({ id: "p_device", displayName: "MacBook Pro" })
+    ]);
+
+    const snapshot = rankParticipants(state);
+
+    expect(snapshot.evidence.length).toBeGreaterThan(0);
+    expect(snapshot.uncertainty).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("generic device name")
+      ])
+    );
   });
 
   test("core imports stay pure", () => {

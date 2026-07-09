@@ -29,9 +29,38 @@ export { extractEventSignals } from "./event-signals.ts";
 export { extractBehaviorSignals } from "./behavior-signals.ts";
 export { extractTranscriptSignals } from "./transcript-signals.ts";
 export {
-  extractAllSignals,
   rankParticipants
 } from "./ranking.ts";
+export { extractAllSignals } from "./all-signals.ts";
+export {
+  calculateMargin,
+  normalizeConfidence,
+  rankByScore
+} from "./confidence.ts";
+export {
+  decideCandidateState,
+  selectedCandidateIdForState
+} from "./decision-state.ts";
+export {
+  buildCandidateExplanation,
+  buildEvidenceItems
+} from "./explanation.ts";
+export {
+  defaultFusionConfig
+} from "./fusion-config.ts";
+export type {
+  FusionConfig,
+  FusionDecisionThresholds
+} from "./fusion-config.ts";
+export {
+  fuseCandidateSignals
+} from "./fusion-engine.ts";
+export type {
+  CandidateFusionResult,
+  DecisionStateInput,
+  FusedParticipantScore,
+  WeightedSignal
+} from "./fusion-types.ts";
 export type {
   ExtractedSignal,
   ParticipantSignalSummary,

@@ -34,11 +34,10 @@ These rules apply to future Codex work in this repository.
 
 ## Current Phase Guardrail
 
-Phase 3 is pure core domain model and deterministic signal extraction only.
+Phase 4 is pure core fusion, confidence, ambiguity, and explanation logic only.
 
 Do not implement yet:
 
-- scoring engine
 - WebSocket behavior
 - Fastify route behavior
 - dashboard

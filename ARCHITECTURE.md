@@ -9,7 +9,7 @@ Sherlock's Candidate Identity Fusion Engine is designed as a monorepo with pure 
 | `apps/web` | Present as a Next.js starter app | Demo dashboard for scenario replay, live participant rankings, confidence state, evidence, uncertainty, and evaluation results. |
 | `apps/docs` | Removed | Not part of the current target architecture. |
 | `apps/http` | Present as a placeholder package | Deployable backend transport/composition layer. It composes HTTP routes and the WebSocket endpoint in one server, validates inputs, calls packages, persists snapshots, and broadcasts candidate-state updates. |
-| `packages/core` | Present with deterministic signal extractors | Pure identity engine: session state, metadata/event/behavior/transcript/interviewer signals, conservative ranking, and later fusion scoring/confidence state machine. |
+| `packages/core` | Present with fusion engine | Pure identity engine: session state, deterministic signals, weighted fusion scoring, confidence/state decisions, ambiguity handling, and explanations. |
 | `packages/shared` | Present | Zod schemas and TypeScript contracts for meetings, participants, events, evidence, candidate state, WebSocket messages, and scenario files. |
 | `packages/db` | Present | Prisma schema, migrations, typed client helper, and repository functions for meetings, participants, events, score snapshots, and scenario results. |
 | `packages/llm` | Missing | Provider interface and adapters that convert transcript chunks into structured role evidence. It must not make final candidate decisions. |
@@ -53,7 +53,7 @@ Forbidden dependency direction:
 1. Meeting metadata and participant events arrive from a scenario replay or future live meeting adapter.
 2. `apps/http` validates and normalizes the payload using `packages/shared` schemas.
 3. `apps/http` applies the event to the current meeting session and calls `packages/core`.
-4. `packages/core` extracts deterministic evidence signals, ranks participants conservatively, and returns uncertainty until Phase 4 fusion rules are implemented.
+4. `packages/core` extracts deterministic evidence signals, fuses them into confidence-ranked participants, handles ambiguity, and returns explanations/uncertainty.
 5. `apps/http` persists events and score snapshots through `packages/db`.
 6. `apps/http` uses `packages/realtime` to broadcast a `candidate_state_updated` message over its WebSocket endpoint.
 7. `apps/web` renders the selected candidate, confidence timeline, participant leaderboard, evidence, uncertainty, and raw event timeline.
