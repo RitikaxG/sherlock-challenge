@@ -13,17 +13,19 @@ Interview fraud detectors are only useful when Sherlock knows which meeting part
 - No heavy autonomous multi-agent framework.
 - No committed secrets, API keys, or real candidate data.
 - No black-box LLM final decision. LLM output can add transcript evidence only.
-- No scoring engine, WebSocket layer, dashboard, evaluator, or LLM package in this first documentation pass.
+- No scoring engine, WebSocket behavior, dashboard, evaluator behavior, or LLM logic in this architecture-alignment pass.
 
 ## Architecture Overview
 
 The target architecture is a Bun/Turborepo monorepo with pure identity logic at the center:
 
 - `packages/shared`: Zod schemas and TypeScript contracts for meetings, participants, events, evidence, WebSocket messages, and scenarios.
-- `packages/core`: pure signal extraction, fusion scoring, confidence state machine, explanation generation, scenario runner, and evaluator.
+- `packages/core`: pure signal extraction, fusion scoring, confidence state machine, and explanation generation.
 - `packages/db`: Prisma/Postgres persistence for meetings, participants, events, score snapshots, and scenario results.
 - `packages/llm`: structured transcript role evidence adapters with deterministic fallback rules.
-- `apps/api`: Fastify REST and WebSocket service that validates events, calls the core engine, persists snapshots, and broadcasts live candidate state.
+- `packages/realtime`: reusable WebSocket infrastructure for connection registry, broadcaster, meeting subscriptions, and typed broadcast helpers.
+- `packages/eval`: scenario replay, metrics, expected-vs-actual checks, and CLI reporting.
+- `apps/http`: deployable backend server that composes HTTP routes and a WebSocket endpoint, calls packages, persists snapshots, and broadcasts live candidate state.
 - `apps/web`: real-time dashboard for scenario replay, participant leaderboard, evidence, uncertainty, confidence timeline, and evaluation summaries.
 - `scenarios`: replayable JSON edge cases with expected outcomes.
 
@@ -33,8 +35,8 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for package responsibilities, event flo
 
 | Phase | Goal | Status |
 | --- | --- | --- |
-| 0 | Product scope, thesis, acceptance criteria, architecture docs | In progress |
-| 1 | Bun/Turborepo workspace contracts and shared schemas | Next |
+| 0 | Product scope, thesis, acceptance criteria, architecture docs | Done |
+| 1 | Bun/Turborepo workspace contracts and package boundary alignment | In progress |
 | 2 | Prisma/Postgres persistence package | Later |
 | 3 | Pure core domain model and deterministic signal extractors | Later |
 | 4 | Fusion engine, confidence, ambiguity, and explanations | Later |
@@ -49,18 +51,19 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for package responsibilities, event flo
 
 This repository currently starts from a Turborepo Tailwind template and contains:
 
-- `apps/docs`: Next.js starter app.
 - `apps/web`: Next.js starter app.
+- `apps/http`: placeholder backend composition package.
 - `packages/ui`: shared React/Tailwind component package.
 - `packages/db`: minimal Prisma package with generated client files and a placeholder schema.
+- `packages/realtime`: placeholder realtime infrastructure package.
+- `packages/eval`: placeholder evaluation package.
 - `packages/eslint-config`: shared ESLint configuration.
 - `packages/typescript-config`: shared TypeScript configuration.
 - `packages/tailwind-config`: shared Tailwind styles.
 - `docs/implementation-blueprint.pdf` and `docs/implementation-blueprint.docx`: implementation blueprint.
 
-Expected target packages/apps from the blueprint that are not present yet:
+Expected target packages/apps that are not present yet:
 
-- `apps/api`
 - `packages/core`
 - `packages/shared`
 - `packages/llm`
@@ -82,7 +85,9 @@ Useful package-level commands currently available:
 
 ```sh
 bun --filter web run dev
-bun --filter docs run dev
+bun --filter http run check-types
+bun --filter @sherlock/realtime run check-types
+bun --filter @sherlock/eval run check-types
 bun --filter @repo/ui run check-types
 ```
 
@@ -95,4 +100,4 @@ bun --filter @sherlock/db run test
 
 ## First Implementation Direction
 
-The recommended next phase is Phase 1: create the workspace contracts before writing scoring logic. Add `packages/shared` with Zod schemas and TypeScript event contracts, add `packages/core` with a minimal pure test harness, and make `bun run check-types` pass across the workspace.
+The recommended next phase is to finish Phase 1 contracts before writing scoring logic. Add `packages/shared` with Zod schemas and TypeScript event contracts, add `packages/core` with a minimal pure test harness, and make `bun run check-types` pass across the workspace.

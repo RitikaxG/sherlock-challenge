@@ -13,30 +13,36 @@ These rules apply to future Codex work in this repository.
 ## Architecture Rules
 
 - Use the existing Turborepo and Bun workspace setup. Do not switch to npm, pnpm, or yarn.
-- Preserve the existing `src/` folder structure inside packages and apps when adding code.
+- Follow the repository's existing package conventions. Do not force a `src/`-based structure where the package already uses root-level modules.
+- Apps compose packages. Packages must not depend on apps.
+- `apps/http` is the deployable backend transport/composition layer.
+- `apps/http` composes HTTP routes and the WebSocket endpoint in one backend server. Do not create a separate deployable WebSocket backend.
+- Keep `apps/http` thin: it may validate, orchestrate package calls, persist through `packages/db`, and broadcast through `packages/realtime`, but it must not contain scoring, confidence, or explanation logic.
 - The core identity engine belongs in `packages/core` and must stay pure and testable.
 - `packages/core` must not import or depend on Fastify, React, Prisma, WebSocket, an LLM provider, filesystem state, network calls, or environment variables.
-- Delivery layers should be thin:
-  - API/WebSocket orchestration belongs in `apps/api`.
-  - Dashboard UI belongs in `apps/web`.
-  - Prisma persistence belongs in `packages/db`.
-  - Shared Zod schemas and TypeScript contracts belong in `packages/shared`.
-  - LLM transcript evidence adapters belong in `packages/llm`.
+- `packages/core` owns candidate scoring, signal extraction, confidence, state machine, and explanation logic.
+- `packages/realtime` owns reusable WebSocket/realtime infrastructure only: connection registry, broadcaster, meeting subscriptions, and typed broadcast helpers.
+- `packages/eval` owns scenario replay, metrics, expected-vs-actual checks, and CLI reporting.
+- `packages/llm` owns transcript evidence extraction only. It must not directly select the candidate.
+- `packages/db` owns Prisma schema, migrations, typed DB client, and repositories.
+- `packages/shared` owns shared Zod schemas and TypeScript contracts.
+- `apps/web` owns the dashboard UI.
 - LLMs may contribute structured transcript evidence, but the deterministic fusion engine remains the final decision-maker.
 
 ## Current Phase Guardrail
 
-This first pass is documentation and repository orientation only.
+This pass is architecture alignment only.
 
 Do not implement yet:
 
 - scoring engine
 - signal extractors
-- WebSocket layer
-- Fastify API
+- WebSocket behavior
+- Fastify route behavior
+- DB repositories
 - dashboard
-- scenario evaluator
-- LLM package/provider
+- scenario evaluator behavior
+- LLM logic/provider
 
 ## Commands
 

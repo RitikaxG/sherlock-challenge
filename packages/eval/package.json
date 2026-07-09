@@ -1,0 +1,26 @@
+{
+  "name": "@sherlock/eval",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "sherlock-eval": "./dist/cli.js"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./cli": "./dist/cli.js",
+    "./evaluator": "./dist/evaluator.js",
+    "./metrics": "./dist/metrics.js",
+    "./scenario-runner": "./dist/scenario-runner.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "*",
+    "@types/node": "^22.15.30",
+    "typescript": "5.9.2"
+  }
+}

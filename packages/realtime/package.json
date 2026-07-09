@@ -1,0 +1,22 @@
+{
+  "name": "@sherlock/realtime",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./dist/index.js",
+    "./broadcaster": "./dist/broadcaster.js",
+    "./connection-registry": "./dist/connection-registry.js",
+    "./meeting-subscriptions": "./dist/meeting-subscriptions.js",
+    "./realtime-hub": "./dist/realtime-hub.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "*",
+    "typescript": "5.9.2"
+  }
+}

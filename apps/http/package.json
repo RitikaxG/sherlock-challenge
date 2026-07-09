@@ -1,0 +1,20 @@
+{
+  "name": "http",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "check-types": "tsc --noEmit",
+    "dev": "tsc --watch",
+    "lint": "eslint . --max-warnings 0"
+  },
+  "dependencies": {
+    "@sherlock/realtime": "*"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "*",
+    "@types/node": "^22.15.30",
+    "typescript": "5.9.2"
+  }
+}
