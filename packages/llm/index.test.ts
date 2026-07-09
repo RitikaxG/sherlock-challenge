@@ -181,10 +181,10 @@ describe("@sherlock/llm Gemini provider", () => {
   test("validates injected Gemini JSON output", async () => {
     const provider = createGeminiTranscriptClassifierProvider({
       client: {
-        interactions: {
-          async create() {
+        models: {
+          async generateContent() {
             return {
-              output_text: JSON.stringify(
+              text: JSON.stringify(
                 await createMockTranscriptClassifierProvider().classifyTranscript(input)
               )
             };
@@ -201,9 +201,9 @@ describe("@sherlock/llm Gemini provider", () => {
   test("throws output validation error for malformed JSON", async () => {
     const provider = createGeminiTranscriptClassifierProvider({
       client: {
-        interactions: {
-          async create() {
-            return { output_text: "not-json" };
+        models: {
+          async generateContent() {
+            return { text: "not-json" };
           }
         }
       }

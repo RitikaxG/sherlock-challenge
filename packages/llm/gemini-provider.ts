@@ -15,10 +15,7 @@ import {
 } from "./schemas.ts";
 import { buildTranscriptClassificationPrompt } from "./transcript-classifier.ts";
 
-type GeminiInteractionClient = {
-  interactions?: {
-    create(input: unknown): Promise<{ output_text?: string }>;
-  };
+type GeminiClient = {
   models?: {
     generateContent(input: unknown): Promise<{ text?: string; response?: { text?: () => string } }>;
   };
@@ -27,7 +24,7 @@ type GeminiInteractionClient = {
 export type GeminiTranscriptClassifierProviderOptions =
   TranscriptClassifierProviderConfig & {
     apiKey?: string;
-    client?: GeminiInteractionClient;
+    client?: GeminiClient;
   };
 
 function parseGeminiJson(outputText: string | undefined) {
@@ -47,37 +44,30 @@ function parseGeminiJson(outputText: string | undefined) {
 }
 
 async function callGemini(
-  client: GeminiInteractionClient,
+  client: GeminiClient,
   model: string,
   prompt: string
 ) {
-  if (client.interactions?.create) {
-    const interaction = await client.interactions.create({
-      model,
-      input: prompt,
-      response_format: {
-        type: "text",
-        mime_type: "application/json",
-        schema: llmTranscriptClassificationJsonSchema
-      }
-    });
-    return interaction.output_text;
-  }
-
   if (client.models?.generateContent) {
     const result = await client.models.generateContent({
       model,
       contents: prompt,
       config: {
         responseMimeType: "application/json",
-        responseSchema: llmTranscriptClassificationJsonSchema
+        responseJsonSchema: llmTranscriptClassificationJsonSchema,
+        responseFormat: {
+          text: {
+            mimeType: "application/json",
+            schema: llmTranscriptClassificationJsonSchema
+          }
+        }
       }
     });
 
     return result.text ?? result.response?.text?.();
   }
 
-  throw new LlmProviderError("Gemini client does not expose a supported generation method.");
+  throw new LlmProviderError("Gemini client does not expose models.generateContent.");
 }
 
 export function createGeminiTranscriptClassifierProvider(
@@ -85,7 +75,7 @@ export function createGeminiTranscriptClassifierProvider(
 ): TranscriptClassifierProvider {
   const apiKey = options.apiKey ?? process.env.GEMINI_API_KEY;
   const model =
-    options.model ?? process.env.GEMINI_MODEL ?? "gemini-3.5-flash";
+    options.model ?? process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
   const client =
     options.client ??
     (() => {
@@ -95,7 +85,7 @@ export function createGeminiTranscriptClassifierProvider(
         );
       }
 
-      return new GoogleGenAI({ apiKey }) as GeminiInteractionClient;
+      return new GoogleGenAI({ apiKey }) as GeminiClient;
     })();
 
   return {
