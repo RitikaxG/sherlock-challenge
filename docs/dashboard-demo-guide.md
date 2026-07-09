@@ -8,7 +8,7 @@ docker compose up
 
 Open `http://localhost:3000`.
 
-This starts Postgres, the Fastify backend on `http://localhost:3001`, and the Next.js dashboard on `http://localhost:3000`.
+This starts Postgres, applies Prisma migrations before the backend boots, runs the Fastify backend on `http://localhost:3001`, and runs the Next.js dashboard on `http://localhost:3000`.
 
 Manual Bun fallback:
 

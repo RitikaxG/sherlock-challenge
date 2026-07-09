@@ -132,6 +132,7 @@ docker compose up
 This starts:
 
 - Postgres on `localhost:5432`
+- Prisma migrations, applied before the backend starts
 - Fastify backend on `http://localhost:3001`
 - Next.js dashboard on `http://localhost:3000`
 
