@@ -35,12 +35,26 @@ These rules apply to future Codex work in this repository.
 
 ## Current Phase Guardrail
 
-Phase 7 is the optional Gemini LLM transcript classifier evidence package.
+Phase 9 is edge-case hardening, evaluation report, demo polish, and final submission preparation.
 
 Do not implement yet:
 
-- dashboard
-- raw audio recording, real meeting-platform integration, CV/person detection, voice biometrics, or fraud verdicts
+- production Zoom/Meet/Teams integration
+- raw audio recording
+- CV/person detection
+- face recognition
+- voice biometrics
+- legal identity verification
+- cheating/fraud verdicts
+- autonomous multi-agent framework
+
+For `apps/web`:
+
+- It owns dashboard UI and demo experience only.
+- It may call `apps/http` routes and WebSocket endpoint.
+- It must not compute candidate identity.
+- It must display backend/core decisions only.
+- It may show local fallback demo mode, but must clearly label it as fallback.
 
 For `packages/llm`:
 

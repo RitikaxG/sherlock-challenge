@@ -23,6 +23,15 @@ import scenario20 from "../../../scenarios/20_llm_generic_project_not_enough.jso
 
 import type { DemoScenario } from "./types";
 
+export const recommendedDemoScenarioIds = [
+  "02_generic_device_name",
+  "12_strong_self_identification",
+  "04_multiple_interviewers",
+  "08_two_unknown_ambiguous",
+  "18_llm_candidate_self_identification",
+  "16_stable_candidate_confirmation"
+] as const;
+
 const scenarioFiles = [
   scenario01,
   scenario02,
@@ -174,4 +183,10 @@ export const demoScenarios: DemoScenario[] = scenarioFiles.map((scenario) => {
 
 export function getScenarioById(id: string) {
   return demoScenarios.find((scenario) => scenario.id === id) ?? demoScenarios[0];
+}
+
+export function getRecommendedDemoScenarios() {
+  return recommendedDemoScenarioIds
+    .map((id) => demoScenarios.find((scenario) => scenario.id === id))
+    .filter((scenario): scenario is DemoScenario => Boolean(scenario));
 }

@@ -6,7 +6,7 @@ Sherlock's Candidate Identity Fusion Engine is designed as a monorepo with pure 
 
 | Area | Current status | Target responsibility |
 | --- | --- | --- |
-| `apps/web` | Present as a Next.js starter app | Demo dashboard for scenario replay, live participant rankings, confidence state, evidence, uncertainty, and evaluation results. |
+| `apps/web` | Present with Phase 8 dashboard | Real-time interview dashboard for scenario replay, participant grid, candidate decision, evidence, uncertainty, criteria transparency, transcript, timeline, and demo narration. |
 | `apps/docs` | Removed | Not part of the current target architecture. |
 | `apps/http` | Present with Fastify routes and WebSocket endpoint | Deployable backend transport/composition layer. It composes HTTP routes and the WebSocket endpoint in one server, validates inputs, calls packages, persists snapshots when configured, and broadcasts candidate-state updates. |
 | `packages/core` | Present with fusion engine | Pure identity engine: session state, deterministic signals, weighted fusion scoring, confidence/state decisions, ambiguity handling, and explanations. |
@@ -20,7 +20,7 @@ Sherlock's Candidate Identity Fusion Engine is designed as a monorepo with pure 
 | `packages/eslint-config` | Present | Shared lint configuration. |
 | `packages/typescript-config` | Present | Shared TypeScript configuration. |
 | `packages/tailwind-config` | Present | Shared Tailwind styles/configuration. |
-| `scenarios` | Present with 17 fixtures | JSON meeting simulations and expected outcomes for repeatable evaluation. |
+| `scenarios` | Present with 20 fixtures | JSON meeting simulations and expected outcomes for repeatable evaluation and dashboard replay. |
 
 ## Dependency Boundaries
 
@@ -56,12 +56,31 @@ Forbidden dependency direction:
 1. Meeting metadata and participant events arrive from a scenario replay or future live meeting adapter.
 2. Future meeting-platform, bot, or ASR sources may pass structured speech observations through `packages/speech`, which emits `speaking_activity` and `transcript_chunk` events without recording raw audio.
 3. `apps/http` validates and normalizes the payload using `packages/shared` schemas.
-4. `apps/http` applies the event to the current meeting session and calls `packages/core`.
-5. `packages/core` extracts deterministic evidence signals, fuses them into confidence-ranked participants, handles ambiguity, and returns explanations/uncertainty.
-6. `apps/http` persists events and score snapshots through `packages/db`.
-7. `apps/http` uses `packages/realtime` to broadcast a `candidate_state_updated` message over its WebSocket endpoint.
-8. `apps/web` renders the selected candidate, confidence timeline, participant leaderboard, evidence, uncertainty, and raw event timeline.
-9. `packages/eval` replays the same events directly through `packages/core` to measure accuracy and edge-case behavior without API/UI dependencies.
+4. For `transcript_chunk` events, `apps/http` may optionally call `packages/llm` to create a structured `llm_transcript_evidence` event.
+5. `apps/http` applies events to the current meeting session and calls `packages/core`.
+6. `packages/core` extracts deterministic evidence signals, fuses them into confidence-ranked participants, handles ambiguity, and returns explanations/uncertainty.
+7. `apps/http` persists events and score snapshots through `packages/db`.
+8. `apps/http` uses `packages/realtime` to broadcast a `candidate_state_updated` message over its WebSocket endpoint.
+9. `apps/web` renders the selected candidate, confidence timeline, participant leaderboard, evidence, uncertainty, transcript, criteria charts, and raw event timeline.
+10. `packages/eval` replays the same 20 scenario fixtures directly through `packages/core` to measure accuracy and edge-case behavior without API/UI dependencies.
+
+LLM transcript evidence flow:
+
+```text
+transcript_chunk event
+        ↓
+optional packages/llm classifier
+        ↓
+llm_transcript_evidence event
+        ↓
+apps/http session store
+        ↓
+packages/core fusion
+        ↓
+candidate_state_updated WebSocket
+        ↓
+apps/web dashboard
+```
 
 Speech metadata flow:
 
@@ -83,15 +102,15 @@ CandidateStateSnapshot
 
 ```mermaid
 flowchart TD
-  Scenario["Scenario JSON / Live Meeting Adapter"] --> HTTP["apps/http<br/>HTTP routes + WebSocket endpoint"]
+  Scenario["20 Scenario JSON fixtures / Live Meeting Adapter"] --> HTTP["apps/http<br/>HTTP routes + WebSocket endpoint"]
   HTTP --> Shared["packages/shared<br/>Zod schemas + contracts"]
   HTTP --> Core["packages/core<br/>pure identity engine"]
   HTTP --> DB["packages/db<br/>Prisma/Postgres"]
   HTTP --> Realtime["packages/realtime<br/>hub + broadcaster + subscriptions"]
-  Realtime --> Web["apps/web<br/>dashboard client"]
-  LLM["packages/llm<br/>transcript evidence only"] -. structured evidence .-> HTTP
-  Speech["packages/speech<br/>speech metadata collector"] --> HTTP
-  Scenario --> Eval["packages/eval<br/>scenario replay + metrics"]
+  Realtime --> Web["apps/web<br/>Phase 8 dashboard client"]
+  LLM["packages/llm<br/>optional transcript evidence provider"] -. llm_transcript_evidence .-> HTTP
+  Speech["packages/speech<br/>upstream speech event adapter"] --> HTTP
+  Scenario --> Eval["packages/eval<br/>20-scenario replay + metrics"]
   Eval --> Core
   Shared --> Core
   Shared --> Eval

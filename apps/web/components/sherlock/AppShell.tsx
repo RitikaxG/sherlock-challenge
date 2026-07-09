@@ -4,7 +4,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useMeetingReplay } from "../../hooks/useMeetingReplay";
 import { useMeetingWebSocket } from "../../hooks/useMeetingWebSocket";
-import { demoScenarios } from "../../lib/demo-scenarios";
+import {
+  demoScenarios,
+  getRecommendedDemoScenarios
+} from "../../lib/demo-scenarios";
 import type { ConnectionStatus, DemoScenario } from "../../lib/types";
 import { CandidateDecisionPanel } from "./CandidateDecisionPanel";
 import { ConnectionStatusBadge } from "./ConnectionStatus";
@@ -18,9 +21,12 @@ import { ScenarioSelector } from "./ScenarioSelector";
 import { TranscriptPanel } from "./TranscriptPanel";
 
 export function AppShell() {
+  const recommendedScenarios = useMemo(() => getRecommendedDemoScenarios(), []);
   const [selectedScenario, setSelectedScenario] = useState<DemoScenario>(
-    demoScenarios[1] ?? demoScenarios[0]!
+    recommendedScenarios[0] ?? demoScenarios[0]!
   );
+  const [scenarioMode, setScenarioMode] =
+    useState<"recommended" | "all">("recommended");
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>("idle");
   const runner = useMeetingReplay(selectedScenario);
@@ -30,6 +36,27 @@ export function AppShell() {
     setSelectedScenario(scenario);
     setConnectionStatus("idle");
   }, [runner]);
+
+  const visibleScenarios = useMemo(
+    () => scenarioMode === "recommended" ? recommendedScenarios : demoScenarios,
+    [recommendedScenarios, scenarioMode]
+  );
+
+  const handleScenarioModeChange = useCallback(
+    (mode: "recommended" | "all") => {
+      setScenarioMode(mode);
+      const nextScenarios = mode === "recommended" ? recommendedScenarios : demoScenarios;
+      if (!nextScenarios.some((scenario) => scenario.id === selectedScenario.id)) {
+        const next = nextScenarios[0];
+        if (next) {
+          runner.reset();
+          setSelectedScenario(next);
+          setConnectionStatus("idle");
+        }
+      }
+    },
+    [recommendedScenarios, runner, selectedScenario.id]
+  );
 
   const handleWsMessage = useCallback(
     (message: { snapshot: NonNullable<typeof runner.snapshot> }) => {
@@ -44,7 +71,6 @@ export function AppShell() {
         setConnectionStatus("connected");
       } else if (status === "error") {
         setConnectionStatus("polling");
-        void runner.pollSnapshot();
       } else if (connectionStatus !== "polling") {
         setConnectionStatus("offline");
       }
@@ -72,7 +98,7 @@ export function AppShell() {
 
     const interval = window.setInterval(() => {
       void runner.pollSnapshot();
-    }, 1500);
+    }, 7500);
 
     return () => window.clearInterval(interval);
   }, [connectionStatus, runner]);
@@ -106,8 +132,10 @@ export function AppShell() {
       <div className="dashboard-grid">
         <div className="left-stack">
           <ScenarioSelector
-            scenarios={demoScenarios}
+            scenarios={visibleScenarios}
+            mode={scenarioMode}
             selectedId={selectedScenario.id}
+            onModeChange={handleScenarioModeChange}
             onSelect={handleScenarioSelect}
           />
           <InterviewRoom
@@ -137,7 +165,11 @@ export function AppShell() {
             onStep={() => void runner.stepNext()}
             onReset={runner.reset}
           />
-          <DemoNarrationPanel scenario={selectedScenario} />
+          <DemoNarrationPanel
+            scenario={selectedScenario}
+            snapshot={runner.snapshot}
+            status={runner.status}
+          />
         </div>
 
         <EvidencePanel snapshot={runner.snapshot} />

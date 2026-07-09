@@ -115,6 +115,27 @@ GEMINI_API_KEY=... bun --filter '@sherlock/llm' test:integration
 
 Gemini is used only to extract structured transcript role evidence. The LLM does not select the candidate; `packages/core` remains the deterministic final decision-maker.
 
+### Enabling real Gemini transcript classification in the backend
+
+By default, the backend accepts transcript and LLM-evidence events but does not call Gemini automatically.
+
+To enable real Gemini classification when `transcript_chunk` events arrive:
+
+```sh
+ENABLE_LLM_TRANSCRIPT_CLASSIFIER=true
+GEMINI_API_KEY=your_key_here
+GEMINI_MODEL=gemini-2.5-flash
+bun --filter http dev
+```
+
+With Docker:
+
+```sh
+ENABLE_LLM_TRANSCRIPT_CLASSIFIER=true GEMINI_API_KEY=your_key_here docker compose up
+```
+
+The LLM extracts structured transcript role evidence only. It does not select the candidate. `packages/core` remains the deterministic final decision-maker.
+
 Dashboard env vars:
 
 ```env

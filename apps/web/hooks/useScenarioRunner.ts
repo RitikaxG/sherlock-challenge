@@ -9,6 +9,7 @@ import {
 } from "../lib/sherlock-api";
 import { createFallbackSnapshot } from "../lib/demo-snapshots";
 import { timelineItemForEvent, transcriptItemForEvent } from "../lib/event-formatters";
+import { snapshotKey } from "../lib/replay-helpers";
 import type {
   CandidateStateSnapshot,
   DemoScenario,
@@ -21,10 +22,10 @@ import type {
 } from "../lib/types";
 
 const speedDelayMs: Record<ReplaySpeed, number> = {
-  "0.5x": 1800,
-  "1x": 900,
-  "2x": 420,
-  instant: 0
+  "0.5x": 2400,
+  "1x": 1400,
+  "2x": 800,
+  instant: 160
 };
 
 function createRuntimeParticipants(scenario: DemoScenario): ParticipantRuntimeState[] {
@@ -91,6 +92,7 @@ export function useScenarioRunner(selectedScenario: DemoScenario) {
   const participantsRef = useRef<ParticipantRuntimeState[]>(participants);
   const meetingIdRef = useRef<string | null>(null);
   const localFallbackRef = useRef(false);
+  const lastSnapshotKeyRef = useRef<string | null>(null);
 
   const reset = useCallback(() => {
     abortRef.current = true;
@@ -108,6 +110,7 @@ export function useScenarioRunner(selectedScenario: DemoScenario) {
     setBackendWarning(null);
     setUseLocalFallback(false);
     localFallbackRef.current = false;
+    lastSnapshotKeyRef.current = null;
   }, [selectedScenario]);
 
   useEffect(() => {
@@ -131,7 +134,11 @@ export function useScenarioRunner(selectedScenario: DemoScenario) {
   const receiveSnapshot = useCallback(
     (nextSnapshot: CandidateStateSnapshot) => {
       setSnapshot(nextSnapshot);
-      appendSnapshotTimeline(nextSnapshot);
+      const nextKey = snapshotKey(nextSnapshot);
+      if (lastSnapshotKeyRef.current !== nextKey) {
+        appendSnapshotTimeline(nextSnapshot);
+        lastSnapshotKeyRef.current = nextKey;
+      }
     },
     [appendSnapshotTimeline]
   );

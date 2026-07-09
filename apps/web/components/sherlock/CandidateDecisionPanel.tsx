@@ -46,6 +46,41 @@ export function CandidateDecisionPanel({
           <strong>{snapshot?.timestampSec ?? 0}s</strong>
         </div>
       </div>
+      <div className="leaderboard">
+        <div className="leaderboard-heading">
+          <strong>Top streams</strong>
+          <span>Backend ranking</span>
+        </div>
+        {(snapshot?.participants ?? []).slice(0, 4).length === 0 ? (
+          <p>No participant scores yet.</p>
+        ) : (
+          snapshot?.participants.slice(0, 4).map((participant, index) => {
+            const selected = snapshot.selectedCandidateId === participant.participantId;
+            const competing =
+              snapshot.state === "AMBIGUOUS" &&
+              snapshot.participants
+                .slice(0, 2)
+                .some((item) => item.participantId === participant.participantId);
+            const runtimeName = findParticipantName(
+              participant.participantId,
+              participants
+            );
+
+            return (
+              <div
+                className={`leaderboard-row ${selected ? "selected" : ""} ${competing ? "competing" : ""}`}
+                key={participant.participantId}
+              >
+                <span>{index + 1}</span>
+                <strong>
+                  {participant.participantId} / {runtimeName}
+                </strong>
+                <em>{formatPercent(participant.confidence)}</em>
+              </div>
+            );
+          })
+        )}
+      </div>
       <div className="why-box">
         <strong>Why</strong>
         <p>{decisionSummary(snapshot)}</p>
