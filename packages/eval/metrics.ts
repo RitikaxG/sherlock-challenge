@@ -14,6 +14,8 @@ export type ScenarioEvaluationResult = {
   readonly expectedState: CandidateDecisionState | null;
   readonly actualState: CandidateDecisionState;
   readonly confidence: number;
+  readonly evidenceCount: number;
+  readonly uncertaintyCount: number;
   readonly selectedCorrectly: boolean;
   readonly stateMatches: boolean;
   readonly falseInterviewerSelection: boolean;
@@ -30,6 +32,8 @@ export type EvaluationMetrics = {
   readonly topOneAccuracy: number;
   readonly stateAccuracy: number;
   readonly falseInterviewerSelections: number;
+  readonly averageFinalConfidence: number | null;
+  readonly averageEvidenceCount: number | null;
   readonly ambiguousScenarios: number;
   readonly ambiguousScenariosPassed: number;
   readonly insufficientDataScenarios: number;
@@ -101,6 +105,15 @@ function averageNullable(values: readonly (number | null)[]): number | null {
   return total / realValues.length;
 }
 
+function average(values: readonly number[]): number | null {
+  if (values.length === 0) {
+    return null;
+  }
+
+  const total = values.reduce((sum, value) => sum + value, 0);
+  return total / values.length;
+}
+
 export function evaluateScenarioResult(
   replay: ScenarioReplayResult
 ): ScenarioEvaluationResult {
@@ -142,6 +155,8 @@ export function evaluateScenarioResult(
     expectedState,
     actualState,
     confidence: replay.finalSnapshot.confidence,
+    evidenceCount: replay.finalSnapshot.evidence.length,
+    uncertaintyCount: replay.finalSnapshot.uncertainty.length,
     selectedCorrectly,
     stateMatches,
     falseInterviewerSelection,
@@ -186,6 +201,12 @@ export function calculateEvaluationMetrics(
     topOneAccuracy: totalScenarios === 0 ? 0 : selectedCorrectly / totalScenarios,
     stateAccuracy: totalScenarios === 0 ? 0 : stateMatches / totalScenarios,
     falseInterviewerSelections,
+    averageFinalConfidence: average(
+      results.map((result) => result.confidence)
+    ),
+    averageEvidenceCount: average(
+      results.map((result) => result.evidenceCount)
+    ),
     ambiguousScenarios: ambiguousResults.length,
     ambiguousScenariosPassed: ambiguousResults.filter((result) => result.passed)
       .length,

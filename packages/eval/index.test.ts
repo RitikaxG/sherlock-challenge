@@ -53,7 +53,13 @@ describe("@sherlock/eval scenario harness", () => {
 
     expect(summary.aggregate.totalScenarios).toBe(10);
     expect(summary.aggregate.passedScenarios).toBe(10);
+    expect(summary.aggregate.averageFinalConfidence).toBeGreaterThan(0);
+    expect(summary.aggregate.averageEvidenceCount).toBeGreaterThan(0);
+    expect(summary.results[0]?.evidenceCount).toBeGreaterThan(0);
+    expect(summary.results[0]?.uncertaintyCount).toBeGreaterThanOrEqual(0);
     expect(report).toContain("Sherlock Scenario Evaluation");
     expect(report).toContain("10/10 passed");
+    expect(report).toContain("Avg final confidence");
+    expect(report).toContain("evidence");
   });
 });
