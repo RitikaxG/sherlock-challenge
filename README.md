@@ -125,9 +125,7 @@ bun --filter '@sherlock/eval' eval
 
 ## Demo Video
 
-<video src="./docs/sherlock-demo.mp4" controls width="100%">
-  <a href="./docs/sherlock-demo.mp4">Watch the Sherlock demo walkthrough</a>
-</video>
+[![Sherlock demo preview](./docs/demo-preview.svg)](./docs/sherlock-demo.mp4)
 
 [Download the original MOV](./docs/sherlock-demo.mov)
 
