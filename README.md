@@ -119,6 +119,10 @@ Run the evaluator with:
 bun --filter '@sherlock/eval' eval
 ```
 
+## Demo Video
+
+- [Sherlock demo walkthrough](./docs/sherlock-demo.mov)
+
 ## Phase Plan Summary
 
 | Phase | Goal | Status |
