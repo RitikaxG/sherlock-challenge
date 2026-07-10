@@ -65,7 +65,7 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for package responsibilities, event flo
 | 7 | Optional LLM transcript classifier evidence package | Done |
 | 8 | React real-time dashboard and demo experience | Done |
 | 9 | Final evaluation report, demo narrative, reproducibility pass, and submission checklist | Done |
-| 10 | Final submission handoff | Later |
+| 10 | Final submission handoff | Done |
 
 ## Current Repository Shape
 
@@ -204,20 +204,17 @@ Postgres only:
 docker compose up postgres
 ```
 
-## Next Implementation Direction
+## Final Submission Status
 
-Live ingestion flow:
+The repository is ready for final handoff after running the verification checklist.
 
-```text
-Speech collector / meeting bot
-        ↓
-POST /meetings/:meetingId/events
-        ↓
-apps/http session store
-        ↓
-packages/core rankParticipants
-        ↓
-candidate_state_updated WebSocket broadcast
-```
+Final handoff materials:
 
-The recommended next phase is Phase 9 evaluation report and demo polish. The engine identifies the candidate participant stream; it does not verify the human identity of that stream or make cheating/fraud verdicts.
+- Architecture doc
+- Evaluation report
+- Dashboard demo guide
+- Final demo script
+- Reproducibility guide
+- Submission checklist
+
+The engine identifies the candidate participant stream; it does not verify legal human identity or make cheating/fraud verdicts.

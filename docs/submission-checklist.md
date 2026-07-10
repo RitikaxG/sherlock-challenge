@@ -2,38 +2,49 @@
 
 ## Repo
 
-- [ ] README explains problem, architecture, commands, and demo flow.
-- [ ] Architecture doc is updated.
-- [ ] Evaluation report exists.
-- [ ] Demo script exists.
-- [ ] Reproducibility guide exists.
-- [ ] No secrets committed.
-- [ ] `.env.example` uses placeholders only.
+- [x] README explains problem, architecture, commands, and demo flow.
+- [x] Architecture doc is updated.
+- [x] Evaluation report exists.
+- [x] Demo script exists.
+- [x] Reproducibility guide exists.
+- [x] No secrets committed.
+- [x] `.env.example` uses placeholders only.
 
 ## Commands
 
-- [ ] `bun install`
-- [ ] `bun run check-types`
-- [ ] `bun run build`
-- [ ] Package tests
-- [ ] Eval CLI
+- [x] `bun install`
+- [x] `bun run check-types`
+- [x] `bun run build`
+- [x] Package tests
+- [x] Eval CLI
 - [ ] Optional Gemini smoke test
 
 ## Demo
 
-- [ ] `docker compose up` works from a clean state.
-- [ ] Dashboard loads.
-- [ ] Recommended scenarios replay.
-- [ ] No red dev/issue overlay in recording.
-- [ ] Selected candidate explanation is visible.
-- [ ] Limitations are stated clearly.
+- [x] `docker compose up` works from a clean state.
+- [x] Dashboard loads.
+- [x] Recommended scenarios replay.
+- [x] No red dev/issue overlay in recording.
+- [x] Selected candidate explanation is visible.
+- [x] Limitations are stated clearly.
 
 ## Submission
 
 - [ ] GitHub repo link ready.
 - [ ] Demo video recorded.
-- [ ] README includes setup.
-- [ ] Email prepared for `priya@sherlock.sh`.
+- [x] README includes setup.
+- [x] Email prepared for `priya@sherlock.sh`.
+
+## Final Handoff
+
+- [x] README phase table marks Phase 10 complete.
+- [x] AGENTS.md says Phase 10 final handoff.
+- [x] Docker demo setup verified.
+- [x] Eval report numbers match latest eval output.
+- [x] Final demo script reviewed.
+- [ ] GitHub repo link copied.
+- [ ] Demo video link ready.
+- [x] Submission email drafted.
 
 ## Optional Post-Submission UI Cleanup
 
