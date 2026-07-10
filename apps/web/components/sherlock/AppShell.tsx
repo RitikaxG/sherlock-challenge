@@ -19,7 +19,6 @@ import { ReplayControls } from "./ReplayControls";
 import { ScenarioSelector } from "./ScenarioSelector";
 import { SignalBreakdownCharts } from "./SignalBreakdownCharts";
 import { TranscriptPanel } from "./TranscriptPanel";
-import { WhyCandidateCard } from "./WhyCandidateCard";
 
 export function AppShell() {
   const [selectedScenario, setSelectedScenario] = useState<DemoScenario>(
@@ -124,10 +123,6 @@ export function AppShell() {
               key={selectedScenario.id}
               participants={runner.participants}
               snapshot={runner.snapshot}
-            />
-            <WhyCandidateCard
-              snapshot={runner.snapshot}
-              participants={runner.participants}
             />
             <PipelineStepper snapshot={runner.snapshot} />
             <div className="feed-grid">

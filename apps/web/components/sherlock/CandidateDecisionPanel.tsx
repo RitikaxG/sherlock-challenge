@@ -1,6 +1,9 @@
 import { findParticipantName, formatPercent, inferMargin } from "../../lib/decision-copy";
 import { getParticipantImpactBreakdown } from "../../lib/criteria";
-import { formatSignalName, primaryDecisionReason } from "../../lib/decision-explainability";
+import {
+  aggregateEvidenceReasons,
+  primaryDecisionCriteria
+} from "../../lib/decision-explainability";
 import type {
   EvidenceItem,
   CandidateStateSnapshot,
@@ -44,6 +47,11 @@ export function CandidateDecisionPanel({
   const rejectedEvidence = nearestAlternative
     ? evidenceForParticipant(snapshot?.evidence ?? [], nearestAlternative.participantId, "negative")
     : [];
+  const selectedReasons = aggregateEvidenceReasons(selectedEvidence);
+  const rejectedReasons = aggregateEvidenceReasons(rejectedEvidence);
+  const selectedReason = selectedReasons[0] ?? null;
+  const rejectedReason = rejectedReasons[0] ?? null;
+  const decisionCriteria = primaryDecisionCriteria(snapshot, participants);
 
   return (
     <section className={`panel decision-panel state-${snapshot?.state ?? "INSUFFICIENT_DATA"}`}>
@@ -123,30 +131,28 @@ export function CandidateDecisionPanel({
       </div>
       <div className="why-box">
         <strong>Why selected</strong>
-        <p>{primaryDecisionReason(snapshot, participants)}</p>
-      </div>
-      <div className="selection-reasons">
-        <article>
-          <strong>Why selected</strong>
-          {selectedEvidence.length === 0 ? (
-            <p>No selected stream or positive selected-stream evidence yet.</p>
-          ) : selectedEvidence.map((item) => (
-            <p key={`${item.signal}_${item.reason}`}>
-              {formatSignalName(item.signal)} · +{item.impact.toFixed(2)}
-            </p>
+        <div className="decision-criteria-list">
+          {decisionCriteria.map((item, index) => (
+            <p key={`${item}_${index}`}>{item}</p>
           ))}
-        </article>
-        <article>
-          <strong>Why nearest alternative lost</strong>
-          {rejectedEvidence.length === 0 ? (
-            <p>No negative evidence on the nearest alternative yet; it is lower by score or margin.</p>
-          ) : rejectedEvidence.map((item) => (
-            <p key={`${item.signal}_${item.reason}`}>
-              {formatSignalName(item.signal)} · {item.impact.toFixed(2)}
-            </p>
-          ))}
-        </article>
+        </div>
       </div>
+      {selectedReason || rejectedReason ? (
+      <div className="selection-reasons compact">
+        {selectedReason ? (
+          <p>
+            <span>Selected evidence</span>
+            <b>{selectedReason.label}{selectedReason.count > 1 ? ` x${selectedReason.count}` : ""}</b>
+          </p>
+        ) : null}
+        {rejectedReason ? (
+          <p>
+            <span>Alternative held back</span>
+            <b>{rejectedReason.label}{rejectedReason.count > 1 ? ` x${rejectedReason.count}` : ""}</b>
+          </p>
+        ) : null}
+      </div>
+      ) : null}
       <details className="decision-formula">
         <summary>How this decision is calculated</summary>
         <p>Confidence = normalized positive evidence vs negative/exclusion evidence</p>

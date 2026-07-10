@@ -14,6 +14,11 @@ import {
   recommendedDemoScenarioIds
 } from "./demo-scenarios";
 import {
+  aggregateEvidenceReasons,
+  primaryDecisionCriteria,
+  whyCandidateSummary
+} from "./decision-explainability";
+import {
   buildEventImpact,
   connectionStatusLabel,
   decisionTracePipeline,
@@ -281,6 +286,71 @@ describe("Sherlock web utilities", () => {
     );
     expect(snapshotKey(baseSnapshot)).not.toBe(
       snapshotKey({ ...baseSnapshot, confidence: 0.9 })
+    );
+  });
+
+  test("decision criteria stay brief and duplicate evidence is aggregated", () => {
+    const snapshot: CandidateStateSnapshot = {
+      ...baseSnapshot,
+      evidence: [
+        {
+          signal: "candidate_name_spoken",
+          participantId: "p1",
+          impact: 0.27,
+          reason: "Candidate name spoken."
+        },
+        {
+          signal: "candidate_name_spoken",
+          participantId: "p1",
+          impact: 0.27,
+          reason: "LLM candidate name spoken."
+        },
+        {
+          signal: "interviewer_email_match",
+          participantId: "p2",
+          impact: -0.38,
+          reason: "Known interviewer."
+        }
+      ]
+    };
+    const participants = [
+      {
+        id: "p1",
+        meetingId: "m1",
+        displayName: "MacBook Pro",
+        isKnownInterviewerHint: false,
+        currentDisplayName: "MacBook Pro",
+        joined: true,
+        webcamOn: false,
+        sharingScreen: false,
+        speaking: false
+      },
+      {
+        id: "p2",
+        meetingId: "m1",
+        displayName: "Priya Sharma",
+        isKnownInterviewerHint: true,
+        currentDisplayName: "Priya Sharma",
+        joined: true,
+        webcamOn: false,
+        sharingScreen: false,
+        speaking: false
+      }
+    ];
+
+    expect(aggregateEvidenceReasons(snapshot.evidence, 2)[0]).toEqual(
+      expect.objectContaining({
+        label: "candidate name spoken",
+        count: 2,
+        impact: expect.closeTo(0.54)
+      })
+    );
+    expect(primaryDecisionCriteria(snapshot, participants)).toEqual([
+      "Selected: candidate name spoken x2",
+      "Alternative held back: interviewer email match on Priya Sharma / p2"
+    ]);
+    expect(whyCandidateSummary(snapshot, participants).selectedReasons[0]).toEqual(
+      expect.objectContaining({ label: "candidate name spoken", count: 2 })
     );
   });
 });

@@ -43,8 +43,8 @@ export function EventImpactPanel({
             {impact.newEvidence.length === 0 ? (
               <p>No new evidence rows were added by this snapshot.</p>
             ) : (
-              impact.newEvidence.slice(0, 4).map((item) => (
-                <p key={`${item.signal}_${item.participantId}_${item.reason}`}>
+              impact.newEvidence.slice(0, 4).map((item, index) => (
+                <p key={`${item.signal}_${item.participantId}_${index}`}>
                   <span className={item.impact >= 0 ? "impact-positive" : "impact-negative"}>
                     {item.impact >= 0 ? "+" : ""}
                     {item.impact.toFixed(2)}

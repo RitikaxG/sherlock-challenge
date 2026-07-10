@@ -32,6 +32,12 @@ export function formatSignalName(signal: string) {
   return signal.replaceAll("_", " ");
 }
 
+export type AggregatedEvidenceReason = {
+  label: string;
+  impact: number;
+  count: number;
+};
+
 function sortedEvidence(
   evidence: readonly EvidenceItem[],
   participantId: string,
@@ -44,6 +50,33 @@ function sortedEvidence(
         : item.participantId === participantId && item.impact < 0
     )
     .sort((left, right) => Math.abs(right.impact) - Math.abs(left.impact));
+}
+
+export function aggregateEvidenceReasons(
+  evidence: readonly EvidenceItem[],
+  limit = 3
+): AggregatedEvidenceReason[] {
+  const grouped = new Map<string, AggregatedEvidenceReason>();
+
+  for (const item of evidence) {
+    const key = `${item.signal}_${item.participantId}_${item.impact >= 0 ? "positive" : "negative"}`;
+    const existing = grouped.get(key);
+
+    if (existing) {
+      existing.impact += item.impact;
+      existing.count += 1;
+    } else {
+      grouped.set(key, {
+        label: formatSignalName(item.signal),
+        impact: item.impact,
+        count: 1
+      });
+    }
+  }
+
+  return [...grouped.values()]
+    .sort((left, right) => Math.abs(right.impact) - Math.abs(left.impact))
+    .slice(0, limit);
 }
 
 export function topPositiveEvidence(
@@ -118,6 +151,37 @@ export function primaryDecisionReason(
   return `Selected because ${selectedReason}; nearest alternative was held back by ${rejectedReason}.`;
 }
 
+export function primaryDecisionCriteria(
+  snapshot: CandidateStateSnapshot | null,
+  participants: readonly ParticipantRuntimeState[]
+) {
+  if (!snapshot || !snapshot.selectedCandidateId) {
+    return [
+      "Waiting for enough evidence",
+      "No candidate stream selected yet"
+    ];
+  }
+
+  const selected = aggregateEvidenceReasons(
+    topPositiveEvidence(snapshot, snapshot.selectedCandidateId, 6),
+    2
+  );
+  const alternative = nearestAlternative(snapshot);
+  const rejected = aggregateEvidenceReasons(
+    topNegativeEvidence(snapshot, alternative?.participantId, 6),
+    1
+  );
+
+  return [
+    selected[0]
+      ? `Selected: ${selected[0].label}${selected[0].count > 1 ? ` x${selected[0].count}` : ""}`
+      : "Selected: stronger positive candidate evidence",
+    rejected[0]
+      ? `Alternative held back: ${rejected[0].label} on ${participantLabel(alternative?.participantId, participants)}`
+      : "Alternative held back: weaker or less specific evidence"
+  ];
+}
+
 export function whyCandidateSummary(
   snapshot: CandidateStateSnapshot | null,
   participants: readonly ParticipantRuntimeState[]
@@ -140,18 +204,12 @@ export function whyCandidateSummary(
     rejectedLabel: participantLabel(alternative?.participantId, participants),
     selectedReasons:
       selectedEvidence.length > 0
-        ? selectedEvidence.map((item) => ({
-            label: formatSignalName(item.signal),
-            impact: item.impact
-          }))
-        : [{ label: "Waiting for positive candidate evidence", impact: 0 }],
+        ? aggregateEvidenceReasons(selectedEvidence)
+        : [{ label: "Waiting for positive candidate evidence", impact: 0, count: 1 }],
     rejectedReasons:
       rejectedEvidence.length > 0
-        ? rejectedEvidence.map((item) => ({
-            label: formatSignalName(item.signal),
-            impact: item.impact
-          }))
-        : [{ label: "No strong exclusion evidence on nearest alternative yet", impact: 0 }],
+        ? aggregateEvidenceReasons(rejectedEvidence)
+        : [{ label: "No strong exclusion evidence on nearest alternative yet", impact: 0, count: 1 }],
     limitations
   };
 }

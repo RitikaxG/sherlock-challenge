@@ -1,7 +1,7 @@
 import { formatPercent } from "../../lib/decision-copy";
 import {
   participantLabel,
-  primaryDecisionReason
+  primaryDecisionCriteria
 } from "../../lib/decision-explainability";
 import type {
   CandidateStateSnapshot,
@@ -20,6 +20,7 @@ export function DecisionSummaryHero({
     participants
   );
   const confidence = snapshot?.confidence ?? 0;
+  const criteria = primaryDecisionCriteria(snapshot, participants);
 
   return (
     <section className={`decision-summary-hero state-${snapshot?.state ?? "INSUFFICIENT_DATA"}`}>
@@ -27,7 +28,11 @@ export function DecisionSummaryHero({
         <p className="eyebrow">Live decision summary</p>
         <span>Selected candidate stream</span>
         <h2>{selectedLabel}</h2>
-        <p>{primaryDecisionReason(snapshot, participants)}</p>
+        <div className="decision-criteria-list" aria-label="Decision criteria">
+          {criteria.map((item, index) => (
+            <p key={`${item}_${index}`}>{item}</p>
+          ))}
+        </div>
         <div className="hero-limitations">
           <span>Face/liveness/ID not verified</span>
           <span>No fraud verdict</span>

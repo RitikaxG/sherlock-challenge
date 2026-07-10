@@ -68,6 +68,30 @@ function familyLabel(name: string) {
   return name;
 }
 
+function briefCriteriaDescription(name: string) {
+  if (name === "Transcript / LLM evidence") {
+    return "Transcript and Gemini role evidence; the LLM never chooses the candidate.";
+  }
+
+  if (name === "Audio/video future signals") {
+    return "Reserved future audio/video signals; not active in this prototype.";
+  }
+
+  if (name === "Safety overrides") {
+    return "Guardrails for ambiguity, contradictions, stale evidence, and interviewer exclusion.";
+  }
+
+  if (name === "Metadata signals") {
+    return "Names, emails, devices, and interviewer/company hints.";
+  }
+
+  if (name === "Behavior signals") {
+    return "Speech, webcam, and screen-share context used as weak support.";
+  }
+
+  return "Join timing, display-name changes, and stream continuity context.";
+}
+
 export function SignalBreakdownCharts({
   snapshot
 }: {
@@ -195,10 +219,10 @@ export function SignalBreakdownCharts({
             {evidence.length === 0 ? (
               <p className="empty-text">Evidence points will appear after replay events.</p>
             ) : (
-              evidence.slice(0, 12).map((item) => (
+              evidence.slice(0, 12).map((item, index) => (
                 <div
                   className="impact-point-row"
-                  key={`${item.signal}_${item.participantId}_${item.reason}`}
+                  key={`${item.signal}_${item.participantId}_${index}`}
                 >
                   <span title={item.signal}>{item.signal.replaceAll("_", " ")}</span>
                   <div className="impact-axis">
@@ -224,18 +248,7 @@ export function SignalBreakdownCharts({
           {criteria.map((item) => (
             <article key={item.name}>
               <strong>{item.name}</strong>
-              <h3>What this checks</h3>
-              <p>{item.description}</p>
-              <h3>Why it matters</h3>
-              <p>
-                {item.name === "Transcript / LLM evidence"
-                  ? "The LLM extracts role evidence only. It does not choose the final candidate."
-                  : item.name === "Audio/video future signals"
-                    ? "Reserved for future face, voice, and liveness checks; not active in this prototype."
-                    : "This evidence helps compare participant streams while safety gates prevent overconfident selection."}
-              </p>
-              <h3>Example signals</h3>
-              <small>{item.examples.join(", ")}</small>
+              <p>{briefCriteriaDescription(item.name)}</p>
             </article>
           ))}
         </div>

@@ -1,7 +1,37 @@
 import { formatTimestamp } from "../../lib/event-formatters";
 import type { TranscriptItem } from "../../lib/types";
 
+type CollapsedTranscriptItem = TranscriptItem & {
+  count: number;
+};
+
+function collapseTranscriptItems(items: readonly TranscriptItem[]) {
+  const grouped = new Map<string, CollapsedTranscriptItem>();
+
+  for (const item of items) {
+    const key = [
+      item.timestampSec,
+      item.participantId,
+      item.text,
+      item.source,
+      item.llmEvidence ?? "",
+      item.role ?? ""
+    ].join("|");
+    const existing = grouped.get(key);
+
+    if (existing) {
+      existing.count += 1;
+    } else {
+      grouped.set(key, { ...item, count: 1 });
+    }
+  }
+
+  return [...grouped.values()];
+}
+
 export function TranscriptPanel({ items }: { items: TranscriptItem[] }) {
+  const visibleItems = collapseTranscriptItems(items).slice(-10);
+
   return (
     <section className="panel transcript-panel">
       <div className="panel-heading">
@@ -11,16 +41,17 @@ export function TranscriptPanel({ items }: { items: TranscriptItem[] }) {
         </div>
       </div>
       <div className="transcript-list">
-        {items.length === 0 ? (
+        {visibleItems.length === 0 ? (
           <p className="empty-text">Transcript chunks and structured LLM evidence will appear here.</p>
-        ) : items.slice(-10).map((item) => (
+        ) : visibleItems.map((item, index) => (
           <article
             className={`transcript-item ${item.llmEvidence ? "llm-evidence-item" : "raw-transcript-item"}`}
-            key={item.id}
+            key={`${item.id}_${index}`}
           >
             <div>
               <strong>
                 {item.llmEvidence ? "Structured LLM evidence" : "Raw transcript chunk"}
+                {item.count > 1 ? <em className="count-badge">x{item.count}</em> : null}
               </strong>
               <span>{formatTimestamp(item.timestampSec)} · {item.displayName}</span>
             </div>
