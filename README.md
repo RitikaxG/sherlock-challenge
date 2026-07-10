@@ -32,6 +32,24 @@ The target architecture is a Bun/Turborepo monorepo with pure identity logic at 
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for package responsibilities, event flow, and the Mermaid diagram.
 
+## Final Submission Docs
+
+- [Architecture](./ARCHITECTURE.md)
+- [Evaluation Report](./docs/evaluation-report.md)
+- [Dashboard Demo Guide](./docs/dashboard-demo-guide.md)
+- [Final Demo Script](./docs/final-demo-script.md)
+- [Reproducibility Guide](./docs/reproducibility.md)
+- [Submission Checklist](./docs/submission-checklist.md)
+
+## Recommended Demo Path
+
+1. Generic device insufficient
+2. Strong self-identification
+3. Multiple interviewers
+4. Ambiguous top two
+5. LLM candidate evidence
+6. Stable confirmation
+
 ## Phase Plan Summary
 
 | Phase | Goal | Status |
@@ -46,8 +64,8 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for package responsibilities, event flo
 | 6 | Fastify ingestion and WebSocket broadcast | Done |
 | 7 | Optional LLM transcript classifier evidence package | Done |
 | 8 | React real-time dashboard and demo experience | Done |
-| 9 | Edge-case hardening and evaluation report | Later |
-| 10 | Submission polish, demo script, and reproducibility pass | Later |
+| 9 | Final evaluation report, demo narrative, reproducibility pass, and submission checklist | Done |
+| 10 | Final submission handoff | Later |
 
 ## Current Repository Shape
 
