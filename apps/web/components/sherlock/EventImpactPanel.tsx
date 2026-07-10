@@ -1,23 +1,21 @@
-import { formatPercent } from "../../lib/decision-copy";
 import { formatTimestamp } from "../../lib/event-formatters";
+import {
+  confidenceImpactCopy,
+  decisiveEventCopy,
+  selectedStreamImpactCopy,
+  stateImpactCopy
+} from "../../lib/ui-copy";
 import type { EventImpact } from "../../lib/types";
 
-function confidenceChange(impact: EventImpact) {
-  if (impact.previousConfidence === undefined) {
-    return `Confidence is ${formatPercent(impact.nextConfidence)}`;
-  }
+export function EventImpactPanel({
+  impact,
+  selectedCandidateId
+}: {
+  impact: EventImpact | null;
+  selectedCandidateId?: string | null;
+}) {
+  const decisiveCopy = impact ? decisiveEventCopy(impact) : null;
 
-  const delta = impact.nextConfidence - impact.previousConfidence;
-  const direction = delta > 0 ? "increased" : delta < 0 ? "decreased" : "stayed";
-
-  if (direction === "stayed") {
-    return `Confidence stayed ${formatPercent(impact.nextConfidence)}`;
-  }
-
-  return `Confidence ${direction} from ${formatPercent(impact.previousConfidence)} to ${formatPercent(impact.nextConfidence)}`;
-}
-
-export function EventImpactPanel({ impact }: { impact: EventImpact | null }) {
   return (
     <section className="panel event-impact-panel">
       <div className="panel-heading">
@@ -35,16 +33,10 @@ export function EventImpactPanel({ impact }: { impact: EventImpact | null }) {
             <span>{formatTimestamp(impact.timestampSec)}</span>
           </div>
           <ul>
-            <li>
-              State {impact.previousState === impact.nextState ? "stayed" : "changed"}{" "}
-              <strong>{impact.previousState ?? "none"}</strong> to{" "}
-              <strong>{impact.nextState}</strong>
-            </li>
-            <li>{confidenceChange(impact)}</li>
-            <li>
-              Selected stream{" "}
-              {impact.selectedCandidateChanged ? "changed after this event" : "did not change"}
-            </li>
+            {decisiveCopy ? <li className="decisive-event">{decisiveCopy}</li> : null}
+            <li>{stateImpactCopy(impact)}</li>
+            <li>{confidenceImpactCopy(impact)}</li>
+            <li>{selectedStreamImpactCopy(impact, selectedCandidateId)}</li>
           </ul>
           <div className="new-evidence-list">
             <strong>New evidence</strong>

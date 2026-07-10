@@ -1,10 +1,6 @@
-import {
-  decisionSummary,
-  findParticipantName,
-  formatPercent,
-  inferMargin
-} from "../../lib/decision-copy";
+import { findParticipantName, formatPercent, inferMargin } from "../../lib/decision-copy";
 import { getParticipantImpactBreakdown } from "../../lib/criteria";
+import { formatSignalName, primaryDecisionReason } from "../../lib/decision-explainability";
 import type {
   EvidenceItem,
   CandidateStateSnapshot,
@@ -54,9 +50,13 @@ export function CandidateDecisionPanel({
       <div className="panel-heading">
         <div>
           <p className="eyebrow">Candidate decision</p>
-          <h2>{snapshot?.state ?? "Waiting for meeting"}</h2>
+          <h2>Backend ranking and explanation</h2>
         </div>
         <span className="confidence-chip">{formatPercent(snapshot?.confidence ?? 0)}</span>
+      </div>
+      <div className="decision-state-row">
+        <span>State</span>
+        <strong>{snapshot?.state ?? "Waiting for meeting"}</strong>
       </div>
       <div className="decision-hero">
         <span>Selected stream</span>
@@ -72,12 +72,6 @@ export function CandidateDecisionPanel({
           <span>Updated</span>
           <strong>{snapshot?.timestampSec ?? 0}s</strong>
         </div>
-      </div>
-      <div className="decision-formula">
-        <strong>Decision formula</strong>
-        <p>Confidence = normalized positive evidence vs negative/exclusion evidence</p>
-        <p>Margin = top participant confidence - second participant confidence</p>
-        <p>State = threshold + ambiguity + safety gates</p>
       </div>
       <div className="leaderboard">
         <div className="leaderboard-heading">
@@ -128,8 +122,8 @@ export function CandidateDecisionPanel({
         )}
       </div>
       <div className="why-box">
-        <strong>Why</strong>
-        <p>{decisionSummary(snapshot)}</p>
+        <strong>Why selected</strong>
+        <p>{primaryDecisionReason(snapshot, participants)}</p>
       </div>
       <div className="selection-reasons">
         <article>
@@ -138,7 +132,7 @@ export function CandidateDecisionPanel({
             <p>No selected stream or positive selected-stream evidence yet.</p>
           ) : selectedEvidence.map((item) => (
             <p key={`${item.signal}_${item.reason}`}>
-              {item.signal.replaceAll("_", " ")} · +{item.impact.toFixed(2)}
+              {formatSignalName(item.signal)} · +{item.impact.toFixed(2)}
             </p>
           ))}
         </article>
@@ -148,11 +142,17 @@ export function CandidateDecisionPanel({
             <p>No negative evidence on the nearest alternative yet; it is lower by score or margin.</p>
           ) : rejectedEvidence.map((item) => (
             <p key={`${item.signal}_${item.reason}`}>
-              {item.signal.replaceAll("_", " ")} · {item.impact.toFixed(2)}
+              {formatSignalName(item.signal)} · {item.impact.toFixed(2)}
             </p>
           ))}
         </article>
       </div>
+      <details className="decision-formula">
+        <summary>How this decision is calculated</summary>
+        <p>Confidence = normalized positive evidence vs negative/exclusion evidence</p>
+        <p>Margin = top participant confidence - second participant confidence</p>
+        <p>State = thresholds + ambiguity + safety gates</p>
+      </details>
       <div className="boundary-note">
         Candidate participant stream identified only. Human identity verification and fraud detection are not performed here.
       </div>

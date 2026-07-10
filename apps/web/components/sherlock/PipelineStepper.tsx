@@ -18,10 +18,15 @@ export function PipelineStepper({
       </div>
       <div className="pipeline-steps">
         {steps.map((step, index) => (
-          <article className={`pipeline-step ${step.status}`} key={`${step.step}_${index}`}>
+          <article
+            className={`pipeline-step ${step.status}`}
+            key={`${step.step}_${index}`}
+            title={step.summary}
+          >
             <span>{index + 1}</span>
             <div>
               <strong>{step.step}</strong>
+              <em>{step.status}</em>
               <p>{step.summary}</p>
             </div>
           </article>

@@ -8,6 +8,7 @@ import { demoScenarios } from "../../lib/demo-scenarios";
 import type { ConnectionStatus, DemoScenario } from "../../lib/types";
 import { CandidateDecisionPanel } from "./CandidateDecisionPanel";
 import { ConnectionStatusBadge } from "./ConnectionStatus";
+import { DecisionSummaryHero } from "./DecisionSummaryHero";
 import { DemoNarrationPanel } from "./DemoNarrationPanel";
 import { EvidencePanel } from "./EvidencePanel";
 import { EventImpactPanel } from "./EventImpactPanel";
@@ -18,6 +19,7 @@ import { ReplayControls } from "./ReplayControls";
 import { ScenarioSelector } from "./ScenarioSelector";
 import { SignalBreakdownCharts } from "./SignalBreakdownCharts";
 import { TranscriptPanel } from "./TranscriptPanel";
+import { WhyCandidateCard } from "./WhyCandidateCard";
 
 export function AppShell() {
   const [selectedScenario, setSelectedScenario] = useState<DemoScenario>(
@@ -105,6 +107,11 @@ export function AppShell() {
         <div className="warning-banner">{runner.backendWarning}</div>
       ) : null}
 
+      <DecisionSummaryHero
+        snapshot={runner.snapshot}
+        participants={runner.participants}
+      />
+
       <div className="dashboard-grid">
         <div className="dashboard-main">
           <div className="left-stack">
@@ -117,6 +124,10 @@ export function AppShell() {
               key={selectedScenario.id}
               participants={runner.participants}
               snapshot={runner.snapshot}
+            />
+            <WhyCandidateCard
+              snapshot={runner.snapshot}
+              participants={runner.participants}
             />
             <PipelineStepper snapshot={runner.snapshot} />
             <div className="feed-grid">
@@ -135,7 +146,10 @@ export function AppShell() {
               snapshot={runner.snapshot}
               participants={runner.participants}
             />
-            <EventImpactPanel impact={runner.eventImpact} />
+            <EventImpactPanel
+              impact={runner.eventImpact}
+              selectedCandidateId={runner.snapshot?.selectedCandidateId}
+            />
             <ReplayControls
               status={runner.status}
               speed={runner.replaySpeed}

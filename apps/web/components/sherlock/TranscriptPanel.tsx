@@ -20,12 +20,14 @@ export function TranscriptPanel({ items }: { items: TranscriptItem[] }) {
           >
             <div>
               <strong>
-                {item.llmEvidence ? "Structured LLM evidence" : "Transcript chunk"}
+                {item.llmEvidence ? "Structured LLM evidence" : "Raw transcript chunk"}
               </strong>
               <span>{formatTimestamp(item.timestampSec)} · {item.displayName}</span>
             </div>
             <small>
-              {item.llmEvidence ? "Gemini structured role evidence" : `Source: ${item.source}`}
+              {item.llmEvidence
+                ? "Gemini extracted transcript role evidence"
+                : `Source: ${item.source}`}
             </small>
             <p>{item.text}</p>
             {item.llmEvidence ? (
@@ -39,7 +41,7 @@ export function TranscriptPanel({ items }: { items: TranscriptItem[] }) {
                 </span>
                 <span>Strength: {item.strength ?? "n/a"}</span>
                 <span>Kinds: {(item.evidenceKinds ?? [item.llmEvidence]).join(", ")}</span>
-                <em>LLM evidence is input to core; it is not the final decision.</em>
+                <em>LLM extracted role evidence. Core fusion made the final candidate decision.</em>
               </div>
             ) : null}
           </article>

@@ -4,6 +4,10 @@ import {
   getSignalChartData,
   signalFamilyColors
 } from "../../lib/criteria";
+import {
+  guardrailWhyItMatters,
+  orderedSafetyGates
+} from "../../lib/decision-explainability";
 import type { CandidateStateSnapshot } from "../../lib/types";
 
 function barWidth(value: number, max: number) {
@@ -73,7 +77,7 @@ export function SignalBreakdownCharts({
   const chartData = getSignalChartData(snapshot);
   const participantBreakdown = getParticipantImpactBreakdown(snapshot).slice(0, 4);
   const evidence = snapshot?.evidence ?? [];
-  const gates = snapshot?.decisionTrace?.safetyGates ?? [];
+  const gates = orderedSafetyGates(snapshot);
   const donutItems = chartData.map((item) => ({
     name: familyLabel(item.name),
     totalImpact: item.positiveImpact + item.negativeImpact,
@@ -96,8 +100,8 @@ export function SignalBreakdownCharts({
       <div className="chart-layout">
         <div className="chart-block signal-family-card">
           <div className="chart-title-row">
-            <strong>Signal-family contribution</strong>
-            <span>absolute weighted impact</span>
+            <strong>Evidence family contribution</strong>
+            <span>weighted impact</span>
           </div>
           <div className="donut-row">
             <div
@@ -113,7 +117,7 @@ export function SignalBreakdownCharts({
                   <i style={{ background: signalFamilyColors[item.name] ?? "#94a3b8" }} />
                   <strong>{item.name}</strong>
                   <span>
-                    {item.totalImpact.toFixed(2)} · {item.evaluatedCount} signals
+                    {item.totalImpact.toFixed(2)} · {item.evaluatedCount}
                   </span>
                 </p>
               ))}
@@ -152,8 +156,8 @@ export function SignalBreakdownCharts({
                   </div>
                   <small>
                     +{participant.positiveImpact.toFixed(2)} · -
-                    {participant.negativeImpact.toFixed(2)} · raw{" "}
-                    {participant.rawScore.toFixed(2)}
+                    {participant.negativeImpact.toFixed(2)} ·{" "}
+                    {Math.round(participant.confidence * 100)}%
                   </small>
                 </div>
               ))
@@ -174,6 +178,7 @@ export function SignalBreakdownCharts({
                 <article className={`safety-gate ${gate.status}`} key={gate.gate}>
                   <strong>{gate.gate.replaceAll("_", " ")}</strong>
                   <span>{gate.status.replaceAll("_", " ")}</span>
+                  <small>{guardrailWhyItMatters[gate.gate]}</small>
                   <p>{gate.summary}</p>
                 </article>
               ))
@@ -219,8 +224,18 @@ export function SignalBreakdownCharts({
           {criteria.map((item) => (
             <article key={item.name}>
               <strong>{item.name}</strong>
+              <h3>What this checks</h3>
               <p>{item.description}</p>
-              <small>Examples: {item.examples.join(", ")}</small>
+              <h3>Why it matters</h3>
+              <p>
+                {item.name === "Transcript / LLM evidence"
+                  ? "The LLM extracts role evidence only. It does not choose the final candidate."
+                  : item.name === "Audio/video future signals"
+                    ? "Reserved for future face, voice, and liveness checks; not active in this prototype."
+                    : "This evidence helps compare participant streams while safety gates prevent overconfident selection."}
+              </p>
+              <h3>Example signals</h3>
+              <small>{item.examples.join(", ")}</small>
             </article>
           ))}
         </div>
