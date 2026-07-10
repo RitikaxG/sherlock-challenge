@@ -67,7 +67,7 @@ services:
       SHERLOCK_WEB_ORIGIN: http://localhost:3000
       ENABLE_LLM_TRANSCRIPT_CLASSIFIER: ${ENABLE_LLM_TRANSCRIPT_CLASSIFIER:-false}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-flash-lite-latest}
     ports:
       - "3001:3001"
     volumes:

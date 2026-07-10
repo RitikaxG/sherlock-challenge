@@ -130,7 +130,7 @@ To enable real Gemini classification when `transcript_chunk` events arrive:
 ```sh
 ENABLE_LLM_TRANSCRIPT_CLASSIFIER=true
 GEMINI_API_KEY=your_key_here
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-flash-lite-latest
 bun --filter http dev
 ```
 

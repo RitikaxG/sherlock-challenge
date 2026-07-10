@@ -75,7 +75,7 @@ export function createGeminiTranscriptClassifierProvider(
 ): TranscriptClassifierProvider {
   const apiKey = options.apiKey ?? process.env.GEMINI_API_KEY;
   const model =
-    options.model ?? process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
+    options.model ?? process.env.GEMINI_MODEL ?? "gemini-flash-lite-latest";
   const client =
     options.client ??
     (() => {
