@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760" role="img" aria-labelledby="title desc">
+  <title id="title">Sherlock core identity fusion engine architecture</title>
+  <desc id="desc">Diagram showing meeting evidence flowing through shared contracts into a deterministic core identity engine, with optional LLM transcript extraction and evaluation harness around it.</desc>
+  <defs>
+    <style>
+      .bg { fill: #07111f; }
+      .panel { fill: #0f1b2b; stroke: #2f4562; stroke-width: 2; rx: 16; }
+      .core { fill: #102b2e; stroke: #36d399; stroke-width: 3; rx: 18; }
+      .optional { fill: #241d12; stroke: #f59e0b; stroke-width: 2; rx: 16; }
+      .harness { fill: #171e31; stroke: #8b9cf6; stroke-width: 2; rx: 16; }
+      .output { fill: #13233a; stroke: #60a5fa; stroke-width: 2; rx: 16; }
+      .text { fill: #e5edf7; font: 18px Arial, sans-serif; }
+      .small { fill: #a9b6ca; font: 15px Arial, sans-serif; }
+      .tiny { fill: #93a3b8; font: 13px Arial, sans-serif; }
+      .label { fill: #6db4ff; font: 700 14px Arial, sans-serif; letter-spacing: .7px; }
+      .coreLabel { fill: #34d399; font: 700 14px Arial, sans-serif; letter-spacing: .7px; }
+      .warnLabel { fill: #fbbf24; font: 700 14px Arial, sans-serif; letter-spacing: .7px; }
+      .arrow { stroke: #7fa3c9; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .softArrow { stroke: #64748b; stroke-width: 2.5; fill: none; marker-end: url(#arrowSoft); stroke-dasharray: 8 7; }
+      .greenArrow { stroke: #34d399; stroke-width: 3; fill: none; marker-end: url(#arrowGreen); }
+      .note { fill: #0a1523; stroke: #26384f; stroke-width: 1.5; rx: 12; }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#7fa3c9" />
+    </marker>
+    <marker id="arrowSoft" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#64748b" />
+    </marker>
+    <marker id="arrowGreen" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#34d399" />
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1280" height="760" />
+  <text x="48" y="52" class="text" style="font-size:28px;font-weight:700">Core Candidate Identity Fusion Engine</text>
+  <text x="48" y="82" class="small">Deterministic routing of the candidate participant stream. LLMs can add transcript evidence, but never choose the candidate.</text>
+
+  <rect x="40" y="120" width="230" height="430" class="panel" />
+  <text x="62" y="152" class="label">EVIDENCE INPUTS</text>
+  <text x="62" y="195" class="text">Meeting metadata</text>
+  <text x="62" y="220" class="small">candidate name/email</text>
+  <text x="62" y="245" class="small">interviewer hints</text>
+  <text x="62" y="292" class="text">Participant events</text>
+  <text x="62" y="317" class="small">join, leave, rename</text>
+  <text x="62" y="364" class="text">Transcript chunks</text>
+  <text x="62" y="389" class="small">speaker text evidence</text>
+  <text x="62" y="436" class="text">Behavior signals</text>
+  <text x="62" y="461" class="small">speech activity</text>
+  <text x="62" y="486" class="small">webcam / screen share</text>
+
+  <rect x="330" y="120" width="250" height="148" class="optional" />
+  <text x="352" y="152" class="warnLabel">OPTIONAL LLM EXTRACTOR</text>
+  <text x="352" y="192" class="text">Gemini transcript</text>
+  <text x="352" y="217" class="small">classifies role evidence</text>
+  <text x="352" y="242" class="small">candidate_like / interviewer_like</text>
+
+  <rect x="330" y="324" width="250" height="144" class="panel" />
+  <text x="352" y="356" class="label">SHARED CONTRACTS</text>
+  <text x="352" y="397" class="text">Zod MeetingEvent</text>
+  <text x="352" y="422" class="small">typed, validated events</text>
+  <text x="352" y="447" class="small">same shape for all sources</text>
+
+  <rect x="650" y="115" width="320" height="440" class="core" />
+  <text x="676" y="150" class="coreLabel">PURE DETERMINISTIC CORE</text>
+  <text x="676" y="192" class="text">1. Session state</text>
+  <text x="696" y="217" class="small">current participants + event history</text>
+  <text x="676" y="259" class="text">2. Signal extraction</text>
+  <text x="696" y="284" class="small">metadata, transcript, behavior</text>
+  <text x="676" y="326" class="text">3. Evidence lifecycle</text>
+  <text x="696" y="351" class="small">stale evidence decay + persistence</text>
+  <text x="676" y="393" class="text">4. Weighted scoring</text>
+  <text x="696" y="418" class="small">positive vs exclusionary impact</text>
+  <text x="676" y="460" class="text">5. Safety gates</text>
+  <text x="696" y="485" class="small">ambiguity, contradiction, confidence</text>
+  <text x="676" y="527" class="text">6. Explanation trace</text>
+
+  <rect x="1035" y="120" width="205" height="170" class="output" />
+  <text x="1057" y="152" class="label">OUTPUT SNAPSHOT</text>
+  <text x="1057" y="193" class="text">Selected stream</text>
+  <text x="1057" y="222" class="text">State</text>
+  <text x="1057" y="251" class="text">Confidence</text>
+  <text x="1057" y="276" class="small">evidence + explanation</text>
+
+  <rect x="1035" y="360" width="205" height="190" class="panel" />
+  <text x="1057" y="392" class="label">APP COMPOSITION</text>
+  <text x="1057" y="433" class="text">apps/http</text>
+  <text x="1057" y="458" class="small">routes + orchestration</text>
+  <text x="1057" y="493" class="text">packages/db</text>
+  <text x="1057" y="518" class="small">optional persistence</text>
+
+  <rect x="650" y="610" width="320" height="105" class="harness" />
+  <text x="676" y="642" class="label" style="fill:#a5b4fc">EVALUATION HARNESS</text>
+  <text x="676" y="682" class="text">Scenario replay + metrics</text>
+  <text x="676" y="707" class="small">expected vs actual, edge-case coverage</text>
+
+  <rect x="330" y="590" width="250" height="125" class="note" />
+  <text x="352" y="622" class="label">CORE BOUNDARY</text>
+  <text x="352" y="660" class="small">No Fastify, Prisma, React,</text>
+  <text x="352" y="684" class="small">WebSocket, env vars, network,</text>
+  <text x="352" y="708" class="small">or LLM SDK imports in core.</text>
+
+  <path d="M270 335 C300 335 300 396 330 396" class="arrow" />
+  <path d="M270 365 C300 365 300 194 330 194" class="softArrow" />
+  <path d="M455 268 L455 324" class="softArrow" />
+  <path d="M580 396 L650 396" class="arrow" />
+  <path d="M970 230 L1035 230" class="greenArrow" />
+  <path d="M970 455 L1035 455" class="softArrow" />
+  <path d="M810 555 L810 610" class="softArrow" />
+  <path d="M650 660 C610 660 610 560 650 505" class="softArrow" />
+
+  <text x="292" y="315" class="tiny">transcript only</text>
+  <text x="402" y="304" class="tiny">LLM emits evidence event</text>
+  <text x="1000" y="211" class="tiny">decision</text>
+  <text x="1000" y="436" class="tiny">persist / broadcast</text>
+</svg>

@@ -52,6 +52,10 @@ Start here:
 
 The project is a Bun/Turborepo monorepo with pure identity logic at the center:
 
+![Core identity fusion engine architecture](./docs/core-identity-engine-diagram.svg)
+
+The core identity engine is intentionally deterministic. `apps/http` receives and validates meeting events, optional Gemini classification converts transcript chunks into structured role evidence, and then `packages/core` applies the same deterministic signal extraction, weighting, safety gates, confidence thresholds, and explanation logic for every run. The LLM never selects the candidate; it only contributes evidence that the core engine can accept, reject, or ignore.
+
 - `packages/shared`: Zod schemas and TypeScript contracts for meetings, participants, events, evidence, WebSocket messages, and scenarios.
 - `packages/core`: pure session state, deterministic signal extraction, fusion scoring, confidence/state decisions, ambiguity handling, explanations, and decision trace.
 - `packages/db`: Prisma/Postgres persistence for meetings, participants, events, score snapshots, and scenario results.
@@ -121,7 +125,11 @@ bun --filter '@sherlock/eval' eval
 
 ## Demo Video
 
-- [Sherlock demo walkthrough](./docs/sherlock-demo.mov)
+<video src="./docs/sherlock-demo.mp4" controls width="100%">
+  <a href="./docs/sherlock-demo.mp4">Watch the Sherlock demo walkthrough</a>
+</video>
+
+[Download the original MOV](./docs/sherlock-demo.mov)
 
 ## Phase Plan Summary
 
