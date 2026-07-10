@@ -9,14 +9,21 @@ function collapseTranscriptItems(items: readonly TranscriptItem[]) {
   const grouped = new Map<string, CollapsedTranscriptItem>();
 
   for (const item of items) {
-    const key = [
-      item.timestampSec,
-      item.participantId,
-      item.text,
-      item.source,
-      item.llmEvidence ?? "",
-      item.role ?? ""
-    ].join("|");
+    const key = item.llmEvidence
+      ? [
+          item.timestampSec,
+          item.participantId,
+          item.source,
+          item.role ?? "",
+          item.llmEvidence,
+          (item.evidenceKinds ?? []).join(",")
+        ].join("|")
+      : [
+          item.timestampSec,
+          item.participantId,
+          item.text,
+          item.source
+        ].join("|");
     const existing = grouped.get(key);
 
     if (existing) {

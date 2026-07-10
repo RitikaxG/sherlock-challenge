@@ -187,12 +187,13 @@ export function useScenarioRunner(selectedScenario: DemoScenario) {
         return;
       }
 
-      const updatedParticipants = applyParticipantEvent(participantsRef.current, event);
+      const previousParticipants = participantsRef.current;
+      const updatedParticipants = applyParticipantEvent(previousParticipants, event);
       participantsRef.current = updatedParticipants;
       setParticipants(updatedParticipants);
       setTimeline((items) => [
         ...items,
-        timelineItemForEvent(event, eventIndex, updatedParticipants)
+        timelineItemForEvent(event, eventIndex, previousParticipants)
       ]);
       const transcriptItem = transcriptItemForEvent(event, updatedParticipants);
       if (transcriptItem) {
