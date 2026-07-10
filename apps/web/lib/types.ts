@@ -37,7 +37,15 @@ export type DemoScenario = {
 };
 
 export type ReplayStatus = "idle" | "running" | "paused" | "completed";
-export type ConnectionStatus = "idle" | "connecting" | "connected" | "polling" | "offline";
+export type ConnectionStatus =
+  | "idle"
+  | "connecting"
+  | "backend_connected"
+  | "websocket_connected"
+  | "websocket_disconnected"
+  | "polling"
+  | "local_fallback"
+  | "offline";
 export type ReplaySpeed = "0.5x" | "1x" | "2x" | "instant";
 
 export type TimelineItem = {
@@ -59,6 +67,21 @@ export type TranscriptItem = {
   source: string;
   llmEvidence?: string;
   strength?: string;
+  role?: string;
+  confidence?: number;
+  evidenceKinds?: string[];
+};
+
+export type EventImpact = {
+  eventLabel: string;
+  participantId?: string;
+  timestampSec?: number;
+  previousState?: CandidateDecisionState;
+  nextState: CandidateDecisionState;
+  previousConfidence?: number;
+  nextConfidence: number;
+  selectedCandidateChanged: boolean;
+  newEvidence: EvidenceItem[];
 };
 
 export type ParticipantRuntimeState = Participant & {
@@ -89,5 +112,6 @@ export type PostEventResponse = {
   eventAccepted: boolean;
   snapshot: CandidateStateSnapshot;
   llmEvidenceApplied?: boolean;
+  llmEvent?: MeetingEvent;
   llmWarning?: string;
 };

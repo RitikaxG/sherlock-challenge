@@ -1,5 +1,6 @@
 import type { CandidateStateSnapshot, ParticipantScore } from "@sherlock/shared";
 
+import { buildDecisionTrace } from "./decision-trace.ts";
 import { fuseCandidateSignals } from "./fusion-engine.ts";
 import type { CandidateSessionState } from "./session-state.ts";
 
@@ -23,6 +24,7 @@ export function rankParticipants(
     state: result.decisionState,
     participants,
     evidence: [...result.evidence],
-    uncertainty: [...result.uncertainty]
+    uncertainty: [...result.uncertainty],
+    decisionTrace: buildDecisionTrace(state, result)
   };
 }

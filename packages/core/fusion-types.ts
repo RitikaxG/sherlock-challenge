@@ -7,6 +7,7 @@ import type {
 import type { ExtractedSignal } from "./signal-types.ts";
 
 export type WeightedSignal = ExtractedSignal & {
+  readonly sourceWeight: number;
   readonly weightedImpact: number;
 };
 
@@ -32,6 +33,7 @@ export type CandidateFusionResult = {
   readonly confidence: number;
   readonly evidence: readonly EvidenceItem[];
   readonly uncertainty: readonly string[];
+  readonly expiredSignalCount: number;
 };
 
 export type DecisionStateInput = {

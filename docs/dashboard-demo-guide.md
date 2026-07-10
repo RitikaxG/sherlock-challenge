@@ -37,6 +37,18 @@ SHERLOCK_WEB_ORIGIN=http://localhost:3000
 5. LLM candidate self-identification
 6. Stable candidate confirmation
 
+## Explaining The Dashboard
+
+- Pipeline Trace: narrate the path from event ingestion to signal extraction, weighting, ranking, safety gates, and emitted decision.
+- Signal Breakdown: use the donut to show which signal families contributed, then use the stacked bars to explain positive vs negative impact per stream.
+- Safety Gates: call out interviewer exclusion, contradictions, ambiguity margin, confirmation stability, evidence decay, and the identity verification limitation.
+- Event Impact: after stepping a scenario, show what changed in state, confidence, selected stream, and evidence after the latest event.
+- Transcript / LLM Evidence: separate transcript chunks from Gemini structured role evidence. Gemini contributes evidence only; core still makes the candidate decision.
+
+## Final Recording Note
+
+Use a production build or disable local dev overlays/extensions before recording. A visible development issue badge should not appear in the final demo unless it is clearly browser/dev tooling outside the app.
+
 ## What Each Scenario Proves
 
 - Generic device insufficient: Sherlock does not trust "MacBook Pro" or other weak display names.

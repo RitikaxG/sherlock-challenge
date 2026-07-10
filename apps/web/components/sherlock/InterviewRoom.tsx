@@ -25,7 +25,7 @@ export function InterviewRoom({
       <div className="participant-grid">
         {participants.map((participant) => (
           <ParticipantTile
-            key={participant.id}
+            key={`${participant.meetingId}_${participant.id}`}
             participant={participant}
             snapshot={snapshot}
           />

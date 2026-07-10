@@ -19,7 +19,16 @@ export type SignalChartDatum = {
   examples: string[];
 };
 
-const signalGroups: Record<string, string[]> = {
+export type ParticipantImpactBreakdown = {
+  participantId: string;
+  displayName: string;
+  positiveImpact: number;
+  negativeImpact: number;
+  rawScore: number;
+  confidence: number;
+};
+
+export const signalGroups: Record<string, string[]> = {
   Metadata: [
     "candidate_name_exact",
     "candidate_name_partial",
@@ -74,11 +83,18 @@ const signalGroups: Record<string, string[]> = {
   ]
 };
 
+export const signalFamilyColors: Record<string, string> = {
+  "Metadata": "#60a5fa",
+  "Transcript / LLM": "#34d399",
+  "Behavior": "#f59e0b",
+  "Meeting Events": "#a78bfa",
+  "Audio/Video Future": "#22d3ee",
+  "Safety Overrides": "#fb7185"
+};
+
 function signalsFor(group: string, evidence: readonly EvidenceItem[]) {
   const names = signalGroups[group] ?? [];
-  return evidence.filter((item) =>
-    names.some((name) => item.signal.includes(name))
-  );
+  return evidence.filter((item) => names.includes(item.signal));
 }
 
 export function getCriteria(snapshot: CandidateStateSnapshot | null): CriteriaItem[] {
@@ -88,7 +104,7 @@ export function getCriteria(snapshot: CandidateStateSnapshot | null): CriteriaIt
     {
       name: "Metadata signals",
       importance: "30%",
-      description: "Checks candidate name/email match, generic device names, and interviewer/company-domain exclusion.",
+      description: "Metadata helps orient the engine with names, emails, device labels, and known interviewer/company clues, but it is never blindly trusted as proof.",
       examples: ["candidate_name_exact", "candidate_email_exact", "interviewer_email_match"],
       currentSignals: signalsFor("Metadata", evidence),
       tone: "positive"
@@ -96,7 +112,7 @@ export function getCriteria(snapshot: CandidateStateSnapshot | null): CriteriaIt
     {
       name: "Transcript / LLM evidence",
       importance: "30%",
-      description: "Uses deterministic transcript patterns and Gemini structured role evidence. Generic project phrases stay weak; self-identification is stronger.",
+      description: "Transcript and Gemini evidence describe speaker role signals. They can strengthen or weaken a stream, but the LLM never makes the final candidate decision.",
       examples: ["candidate_self_identification", "candidate_name_spoken", "interviewer_question_prompt"],
       currentSignals: signalsFor("Transcript / LLM", evidence),
       tone: "positive"
@@ -104,7 +120,7 @@ export function getCriteria(snapshot: CandidateStateSnapshot | null): CriteriaIt
     {
       name: "Behavior signals",
       importance: "18%",
-      description: "Uses speaking duration and meeting behavior as supporting evidence, never as the only proof.",
+      description: "Behavior such as speech, webcam, and screen share is weak supporting context. It helps compare streams but should not identify the candidate alone.",
       examples: ["speaking_activity", "webcam_on", "screen_share"],
       currentSignals: signalsFor("Behavior", evidence),
       tone: "neutral"
@@ -112,7 +128,7 @@ export function getCriteria(snapshot: CandidateStateSnapshot | null): CriteriaIt
     {
       name: "Meeting event signals",
       importance: "12%",
-      description: "Tracks joins, leaves, display-name changes, and continuity across rejoin events.",
+      description: "Meeting events track timing, join order, display-name changes, and stream continuity as contextual evidence.",
       examples: ["join_timing", "join_order", "display_name_change"],
       currentSignals: signalsFor("Meeting Events", evidence),
       tone: "neutral"
@@ -120,7 +136,7 @@ export function getCriteria(snapshot: CandidateStateSnapshot | null): CriteriaIt
     {
       name: "Audio/video future signals",
       importance: "10% future-ready",
-      description: "Speech metadata and webcam/screen-share status are scaffolded, without voice biometrics or face matching.",
+      description: "Audio/video signal names are reserved for future evidence. This prototype does not perform face recognition, voice biometrics, liveness, or identity verification.",
       examples: ["active_speaker_confidence", "face_visible"],
       currentSignals: signalsFor("Audio/Video Future", evidence),
       tone: "neutral"
@@ -128,12 +144,36 @@ export function getCriteria(snapshot: CandidateStateSnapshot | null): CriteriaIt
     {
       name: "Safety overrides",
       importance: "override",
-      description: "Interviewer exclusion, contradictions, temporal stability, and evidence decay can block or reduce confidence.",
+      description: "Safety overrides reduce, warn, or block confidence when interviewer evidence, contradictions, ambiguity, stale evidence, or verification limits matter.",
       examples: ["candidate_transcript_interviewer_metadata_conflict", "mixed_transcript_role_conflict", "company_domain_email"],
       currentSignals: signalsFor("Safety Overrides", evidence),
       tone: "warning"
     }
   ];
+}
+
+export function getParticipantImpactBreakdown(
+  snapshot: CandidateStateSnapshot | null
+): ParticipantImpactBreakdown[] {
+  if (snapshot?.decisionTrace?.scoreBreakdown) {
+    return snapshot.decisionTrace.scoreBreakdown.map((participant) => ({
+      participantId: participant.participantId,
+      displayName: participant.displayName,
+      positiveImpact: participant.positiveWeight,
+      negativeImpact: participant.negativeWeight,
+      rawScore: participant.rawScore,
+      confidence: participant.confidence
+    }));
+  }
+
+  return (snapshot?.participants ?? []).map((participant) => ({
+    participantId: participant.participantId,
+    displayName: participant.displayName,
+    positiveImpact: Math.max(0, participant.rawScore),
+    negativeImpact: Math.abs(Math.min(0, participant.rawScore)),
+    rawScore: participant.rawScore,
+    confidence: participant.confidence
+  }));
 }
 
 export function getSignalChartData(

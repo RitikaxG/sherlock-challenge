@@ -3,7 +3,8 @@ import type { FastifyInstance } from "fastify";
 import {
   MeetingEventSchema,
   MeetingSchema,
-  ParticipantSchema
+  ParticipantSchema,
+  type MeetingEvent
 } from "@sherlock/shared";
 import {
   broadcastCandidateStateUpdated,
@@ -110,6 +111,7 @@ export async function registerRoutes(
       const snapshot = options.sessionStore.appendMeetingEvent(meetingId, event);
       let latestSnapshot = snapshot;
       let llmEvidenceApplied = false;
+      let llmEvent: MeetingEvent | undefined;
       let llmWarning: string | undefined;
 
       try {
@@ -139,7 +141,7 @@ export async function registerRoutes(
               sourceEventId: event.sourceEventId,
               speakerConfidence: event.speakerConfidence
             });
-          const llmEvent = createLlmTranscriptEvidenceEvent({
+          llmEvent = createLlmTranscriptEvidenceEvent({
             meetingId,
             participantId: event.participantId,
             timestampSec: event.timestampSec,
@@ -184,7 +186,11 @@ export async function registerRoutes(
         eventAccepted: true,
         snapshot: latestSnapshot,
         ...(options.transcriptClassifier
-          ? { llmEvidenceApplied, ...(llmWarning ? { llmWarning } : {}) }
+          ? {
+              llmEvidenceApplied,
+              ...(llmEvent ? { llmEvent } : {}),
+              ...(llmWarning ? { llmWarning } : {})
+            }
           : {})
       };
     } catch (error) {

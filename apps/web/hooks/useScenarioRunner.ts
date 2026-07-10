@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import {
   createMeeting,
@@ -9,10 +9,11 @@ import {
 } from "../lib/sherlock-api";
 import { createFallbackSnapshot } from "../lib/demo-snapshots";
 import { timelineItemForEvent, transcriptItemForEvent } from "../lib/event-formatters";
-import { snapshotKey } from "../lib/replay-helpers";
+import { buildEventImpact, snapshotKey } from "../lib/replay-helpers";
 import type {
   CandidateStateSnapshot,
   DemoScenario,
+  EventImpact,
   MeetingEvent,
   ParticipantRuntimeState,
   ReplaySpeed,
@@ -86,6 +87,7 @@ export function useScenarioRunner(selectedScenario: DemoScenario) {
   const [backendWarning, setBackendWarning] = useState<string | null>(null);
   const [useLocalFallback, setUseLocalFallback] = useState(false);
   const [replaySpeed, setReplaySpeed] = useState<ReplaySpeed>("1x");
+  const [eventImpact, setEventImpact] = useState<EventImpact | null>(null);
   const abortRef = useRef(false);
   const statusRef = useRef<ReplayStatus>("idle");
   const indexRef = useRef(0);
@@ -93,16 +95,20 @@ export function useScenarioRunner(selectedScenario: DemoScenario) {
   const meetingIdRef = useRef<string | null>(null);
   const localFallbackRef = useRef(false);
   const lastSnapshotKeyRef = useRef<string | null>(null);
+  const snapshotRef = useRef<CandidateStateSnapshot | null>(null);
 
   const reset = useCallback(() => {
+    const nextParticipants = createRuntimeParticipants(selectedScenario);
     abortRef.current = true;
     statusRef.current = "idle";
     indexRef.current = 0;
     setMeetingId(null);
     meetingIdRef.current = null;
-    setParticipants(createRuntimeParticipants(selectedScenario));
-    participantsRef.current = createRuntimeParticipants(selectedScenario);
+    setParticipants(nextParticipants);
+    participantsRef.current = nextParticipants;
     setSnapshot(null);
+    snapshotRef.current = null;
+    setEventImpact(null);
     setTimeline([]);
     setTranscript([]);
     setStatus("idle");
@@ -113,7 +119,7 @@ export function useScenarioRunner(selectedScenario: DemoScenario) {
     lastSnapshotKeyRef.current = null;
   }, [selectedScenario]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     reset();
   }, [reset]);
 
@@ -134,6 +140,7 @@ export function useScenarioRunner(selectedScenario: DemoScenario) {
   const receiveSnapshot = useCallback(
     (nextSnapshot: CandidateStateSnapshot) => {
       setSnapshot(nextSnapshot);
+      snapshotRef.current = nextSnapshot;
       const nextKey = snapshotKey(nextSnapshot);
       if (lastSnapshotKeyRef.current !== nextKey) {
         appendSnapshotTimeline(nextSnapshot);
@@ -193,9 +200,29 @@ export function useScenarioRunner(selectedScenario: DemoScenario) {
       }
 
       if (localFallbackRef.current) {
-        receiveSnapshot(createFallbackSnapshot(selectedScenario, event, eventIndex));
+        const nextSnapshot = createFallbackSnapshot(selectedScenario, event, eventIndex);
+        setEventImpact(buildEventImpact(event, snapshotRef.current, nextSnapshot));
+        receiveSnapshot(nextSnapshot);
       } else if (meetingIdRef.current) {
         const response = await postMeetingEvent(meetingIdRef.current, event);
+        if (response.llmEvent) {
+          setTimeline((items) => [
+            ...items,
+            timelineItemForEvent(
+              response.llmEvent as MeetingEvent,
+              eventIndex,
+              updatedParticipants
+            )
+          ]);
+          const llmTranscriptItem = transcriptItemForEvent(
+            response.llmEvent as MeetingEvent,
+            updatedParticipants
+          );
+          if (llmTranscriptItem) {
+            setTranscript((items) => [...items, llmTranscriptItem]);
+          }
+        }
+        setEventImpact(buildEventImpact(event, snapshotRef.current, response.snapshot));
         receiveSnapshot(response.snapshot);
         if (response.llmWarning) {
           setBackendWarning(response.llmWarning);
@@ -271,6 +298,7 @@ export function useScenarioRunner(selectedScenario: DemoScenario) {
     backendWarning,
     useLocalFallback,
     replaySpeed,
+    eventImpact,
     setReplaySpeed,
     start,
     pause,

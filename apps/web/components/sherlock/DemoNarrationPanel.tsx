@@ -20,18 +20,13 @@ export function DemoNarrationPanel({
     <section className="panel narration-panel">
       <div className="panel-heading">
         <div>
-          <p className="eyebrow">Demo script</p>
-          <h2>What to say</h2>
+          <p className="eyebrow">Scenario context</p>
+          <h2>{scenario.edgeCase}</h2>
         </div>
       </div>
       <p>{scenario.demoExplanation}</p>
-      <ul>
-        {scenario.whatToSay.map((line) => (
-          <li key={line}>{line}</li>
-        ))}
-      </ul>
       <div className="expected-box">
-        <span>Expected</span>
+        <span>Expected outcome</span>
         <strong>{scenario.expectedState}</strong>
         <small>{scenario.expectedSelectedCandidateId ?? "no selected candidate"}</small>
       </div>

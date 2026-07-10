@@ -159,6 +159,17 @@ This starts:
 
 Open `http://localhost:3000`, choose a scenario, and start replay. The web app creates a meeting through `apps/http`, posts fixture events, listens for `candidate_state_updated` over WebSocket, and falls back to snapshot polling if the socket is unavailable. If the backend is unavailable and demo mode is enabled, the UI shows a clear local visual demo warning instead of pretending it is connected.
 
+### Dashboard explanation model
+
+The dashboard explains four layers:
+
+1. Raw events: what happened in the meeting.
+2. Signals: what evidence was extracted.
+3. Fusion: how weighted evidence affected each participant.
+4. Safety gates: why the engine selected, refused, or delayed confirmation.
+
+For final recording, use the production build or ensure dev overlays and browser extensions are disabled so local tooling badges do not appear in the demo.
+
 Manual Bun fallback:
 
 ```sh

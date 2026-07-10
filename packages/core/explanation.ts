@@ -19,7 +19,16 @@ export function buildEvidenceItems(
       signal: signal.kind,
       participantId: signal.participantId,
       impact: signal.weightedImpact,
-      reason: signal.reason
+      reason: signal.reason,
+      source: signal.source,
+      direction: signal.direction,
+      ...(signal.specificity === undefined ? {} : { specificity: signal.specificity }),
+      rawStrength: signal.strength,
+      sourceWeight: signal.sourceWeight ?? config.sourceWeights[signal.source],
+      weightedImpact: signal.weightedImpact,
+      ...(signal.timestampSec === undefined ? {} : { timestampSec: signal.timestampSec }),
+      ...(signal.expiresAtSec === undefined ? {} : { expiresAtSec: signal.expiresAtSec }),
+      ...(signal.isPersistent === undefined ? {} : { isPersistent: signal.isPersistent })
     }));
 }
 

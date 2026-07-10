@@ -361,6 +361,14 @@ describe("@sherlock/core Phase 3 signal extraction", () => {
 
     expect(snapshot.state).toBe("AMBIGUOUS");
     expect(snapshot.selectedCandidateId).toBeNull();
+    expect(snapshot.decisionTrace?.safetyGates).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          gate: "ambiguity_margin",
+          status: "blocked"
+        })
+      ])
+    );
   });
 
   test("transcript evidence lifts candidate and lowers interviewer", () => {
@@ -588,7 +596,23 @@ describe("@sherlock/core Phase 3 signal extraction", () => {
     ].reduce(applyMeetingEvent, unstable);
 
     expect(rankParticipants(unstable).state).toBe("LIKELY_CANDIDATE");
+    expect(rankParticipants(unstable).decisionTrace?.safetyGates).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          gate: "confirmation_stability",
+          status: "warning"
+        })
+      ])
+    );
     expect(rankParticipants(stable).state).toBe("CONFIRMED_CANDIDATE");
+    expect(rankParticipants(stable).decisionTrace?.safetyGates).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          gate: "confirmation_stability",
+          status: "passed"
+        })
+      ])
+    );
   });
 
   test("old transcript and speaking evidence decay while metadata persists", () => {
@@ -850,9 +874,61 @@ describe("@sherlock/core Phase 3 signal extraction", () => {
     const snapshot = rankParticipants(state);
 
     expect(snapshot.evidence.length).toBeGreaterThan(0);
+    expect(snapshot.evidence[0]).toEqual(
+      expect.objectContaining({
+        source: expect.any(String),
+        direction: expect.any(String),
+        rawStrength: expect.any(Number),
+        sourceWeight: expect.any(Number),
+        weightedImpact: expect.any(Number)
+      })
+    );
     expect(snapshot.uncertainty).toEqual(
       expect.arrayContaining([
         expect.stringContaining("generic device name")
+      ])
+    );
+  });
+
+  test("snapshot includes pipeline trace and score breakdown", () => {
+    const state = createInitialSessionState(meeting, [
+      participant({
+        id: "p_candidate",
+        displayName: "Ritika Gupta",
+        email: "ritika@gmail.com"
+      }),
+      participant({
+        id: "p_interviewer",
+        displayName: "Priya Sharma",
+        email: "priya@sherlock.ai"
+      })
+    ]);
+
+    const snapshot = rankParticipants(state);
+
+    expect(snapshot.decisionTrace?.pipeline.map((step) => step.step)).toEqual(
+      expect.arrayContaining([
+        "Signals extracted",
+        "Signal weights applied",
+        "Safety gates checked",
+        "Decision emitted"
+      ])
+    );
+    expect(snapshot.decisionTrace?.scoreBreakdown[0]).toEqual(
+      expect.objectContaining({
+        participantId: "p_candidate",
+        positiveWeight: expect.any(Number),
+        negativeWeight: expect.any(Number),
+        rawScore: expect.any(Number),
+        confidence: expect.any(Number)
+      })
+    );
+    expect(snapshot.decisionTrace?.safetyGates).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          gate: "identity_verification_limit",
+          status: "warning"
+        })
       ])
     );
   });

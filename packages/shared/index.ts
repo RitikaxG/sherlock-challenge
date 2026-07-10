@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 
 export const CandidateDecisionStateSchema = z.enum([
   "INSUFFICIENT_DATA",
@@ -136,7 +136,16 @@ export const EvidenceItemSchema = z.object({
   signal: z.string().min(1),
   participantId: z.string().min(1),
   impact: z.number(),
-  reason: z.string().min(1)
+  reason: z.string().min(1),
+  source: z.string().min(1).optional(),
+  direction: z.enum(["positive", "negative", "neutral"]).optional(),
+  specificity: z.enum(["weak", "medium", "strong"]).optional(),
+  rawStrength: z.number().optional(),
+  sourceWeight: z.number().optional(),
+  weightedImpact: z.number().optional(),
+  timestampSec: z.number().nonnegative().optional(),
+  expiresAtSec: z.number().nonnegative().optional(),
+  isPersistent: z.boolean().optional()
 });
 
 export const ParticipantScoreSchema = z.object({
@@ -144,6 +153,40 @@ export const ParticipantScoreSchema = z.object({
   displayName: z.string().min(1),
   confidence: z.number().min(0).max(1),
   rawScore: z.number()
+});
+
+export const DecisionTracePipelineStepSchema = z.object({
+  step: z.string().min(1),
+  status: z.enum(["complete", "warning", "blocked", "pending"]),
+  summary: z.string().min(1)
+});
+
+export const DecisionTraceScoreBreakdownSchema = z.object({
+  participantId: z.string().min(1),
+  displayName: z.string().min(1),
+  positiveWeight: z.number(),
+  negativeWeight: z.number(),
+  rawScore: z.number(),
+  confidence: z.number().min(0).max(1)
+});
+
+export const DecisionTraceSafetyGateSchema = z.object({
+  gate: z.enum([
+    "interviewer_exclusion",
+    "contradiction",
+    "ambiguity_margin",
+    "confirmation_stability",
+    "evidence_decay",
+    "identity_verification_limit"
+  ]),
+  status: z.enum(["passed", "warning", "blocked", "not_applicable"]),
+  summary: z.string().min(1)
+});
+
+export const CandidateDecisionTraceSchema = z.object({
+  pipeline: z.array(DecisionTracePipelineStepSchema),
+  scoreBreakdown: z.array(DecisionTraceScoreBreakdownSchema),
+  safetyGates: z.array(DecisionTraceSafetyGateSchema)
 });
 
 export const CandidateStateSnapshotSchema = z.object({
@@ -154,7 +197,8 @@ export const CandidateStateSnapshotSchema = z.object({
   participants: z.array(ParticipantScoreSchema),
   evidence: z.array(EvidenceItemSchema),
   uncertainty: z.array(z.string()),
-  timestampSec: z.number().nonnegative().optional()
+  timestampSec: z.number().nonnegative().optional(),
+  decisionTrace: CandidateDecisionTraceSchema.optional()
 });
 
 export const CandidateStateUpdatedMessageSchema = z.object({
@@ -196,6 +240,9 @@ export type Participant = z.infer<typeof ParticipantSchema>;
 export type MeetingEvent = z.infer<typeof MeetingEventSchema>;
 export type EvidenceItem = z.infer<typeof EvidenceItemSchema>;
 export type ParticipantScore = z.infer<typeof ParticipantScoreSchema>;
+export type CandidateDecisionTrace = z.infer<
+  typeof CandidateDecisionTraceSchema
+>;
 export type CandidateStateSnapshot = z.infer<
   typeof CandidateStateSnapshotSchema
 >;

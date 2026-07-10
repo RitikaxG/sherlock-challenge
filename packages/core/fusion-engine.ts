@@ -29,6 +29,7 @@ function weightSignal(signal: ExtractedSignal, config: FusionConfig): WeightedSi
   if (signal.direction === "positive") {
     return {
       ...signal,
+      sourceWeight,
       weightedImpact: signal.strength * sourceWeight
     };
   }
@@ -36,6 +37,7 @@ function weightSignal(signal: ExtractedSignal, config: FusionConfig): WeightedSi
   if (signal.direction === "negative") {
     return {
       ...signal,
+      sourceWeight,
       weightedImpact:
         -signal.strength * sourceWeight * config.negativeSignalMultiplier
     };
@@ -43,6 +45,7 @@ function weightSignal(signal: ExtractedSignal, config: FusionConfig): WeightedSi
 
   return {
     ...signal,
+    sourceWeight,
     weightedImpact: 0
   };
 }
@@ -113,7 +116,11 @@ export function fuseCandidateSignals(
   config: FusionConfig = defaultFusionConfig
 ): CandidateFusionResult {
   const nowSec = currentTimestampSec(state);
-  const signals = extractAllSignals(state).filter((signal) =>
+  const extractedSignals = extractAllSignals(state);
+  const expiredSignalCount = extractedSignals.filter(
+    (signal) => !activeSignal(signal, nowSec)
+  ).length;
+  const signals = extractedSignals.filter((signal) =>
     activeSignal(signal, nowSec)
   ).map((signal) =>
     weightSignal(signal, config)
@@ -190,7 +197,8 @@ export function fuseCandidateSignals(
     margin,
     decisionState,
     selectedCandidateId,
-    confidence: topParticipant?.confidence ?? 0
+    confidence: topParticipant?.confidence ?? 0,
+    expiredSignalCount
   };
   const explanation = buildCandidateExplanation(partialResult, config);
 

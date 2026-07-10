@@ -14,14 +14,33 @@ export function TranscriptPanel({ items }: { items: TranscriptItem[] }) {
         {items.length === 0 ? (
           <p className="empty-text">Transcript chunks and structured LLM evidence will appear here.</p>
         ) : items.slice(-10).map((item) => (
-          <article className="transcript-item" key={item.id}>
+          <article
+            className={`transcript-item ${item.llmEvidence ? "llm-evidence-item" : "raw-transcript-item"}`}
+            key={item.id}
+          >
             <div>
-              <strong>{item.displayName}</strong>
-              <span>{formatTimestamp(item.timestampSec)} · {item.source}</span>
+              <strong>
+                {item.llmEvidence ? "Structured LLM evidence" : "Transcript chunk"}
+              </strong>
+              <span>{formatTimestamp(item.timestampSec)} · {item.displayName}</span>
             </div>
+            <small>
+              {item.llmEvidence ? "Gemini structured role evidence" : `Source: ${item.source}`}
+            </small>
             <p>{item.text}</p>
             {item.llmEvidence ? (
-              <small>LLM: {item.llmEvidence}{item.strength ? ` · ${item.strength}` : ""}</small>
+              <div className="llm-evidence-meta">
+                <span>Role: {item.role ?? "unknown"}</span>
+                <span>
+                  Confidence:{" "}
+                  {item.confidence === undefined
+                    ? "n/a"
+                    : `${Math.round(item.confidence * 100)}%`}
+                </span>
+                <span>Strength: {item.strength ?? "n/a"}</span>
+                <span>Kinds: {(item.evidenceKinds ?? [item.llmEvidence]).join(", ")}</span>
+                <em>LLM evidence is input to core; it is not the final decision.</em>
+              </div>
             ) : null}
           </article>
         ))}

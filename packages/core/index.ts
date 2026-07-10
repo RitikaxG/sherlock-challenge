@@ -48,6 +48,9 @@ export {
   buildEvidenceItems
 } from "./explanation.ts";
 export {
+  buildDecisionTrace
+} from "./decision-trace.ts";
+export {
   defaultFusionConfig
 } from "./fusion-config.ts";
 export type {

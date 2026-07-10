@@ -4,10 +4,27 @@ import {
   formatPercent,
   inferMargin
 } from "../../lib/decision-copy";
+import { getParticipantImpactBreakdown } from "../../lib/criteria";
 import type {
+  EvidenceItem,
   CandidateStateSnapshot,
   ParticipantRuntimeState
 } from "../../lib/types";
+
+function evidenceForParticipant(
+  evidence: readonly EvidenceItem[],
+  participantId: string,
+  direction: "positive" | "negative"
+) {
+  return evidence
+    .filter((item) =>
+      direction === "positive"
+        ? item.impact > 0 && item.participantId === participantId
+        : item.impact < 0 && item.participantId === participantId
+    )
+    .sort((left, right) => Math.abs(right.impact) - Math.abs(left.impact))
+    .slice(0, 3);
+}
 
 export function CandidateDecisionPanel({
   snapshot,
@@ -21,6 +38,16 @@ export function CandidateDecisionPanel({
     snapshot?.selectedCandidateId ?? null,
     participants
   );
+  const breakdown = getParticipantImpactBreakdown(snapshot);
+  const nearestAlternative = snapshot?.participants.find(
+    (participant) => participant.participantId !== snapshot.selectedCandidateId
+  );
+  const selectedEvidence = snapshot?.selectedCandidateId
+    ? evidenceForParticipant(snapshot.evidence, snapshot.selectedCandidateId, "positive")
+    : [];
+  const rejectedEvidence = nearestAlternative
+    ? evidenceForParticipant(snapshot?.evidence ?? [], nearestAlternative.participantId, "negative")
+    : [];
 
   return (
     <section className={`panel decision-panel state-${snapshot?.state ?? "INSUFFICIENT_DATA"}`}>
@@ -46,6 +73,12 @@ export function CandidateDecisionPanel({
           <strong>{snapshot?.timestampSec ?? 0}s</strong>
         </div>
       </div>
+      <div className="decision-formula">
+        <strong>Decision formula</strong>
+        <p>Confidence = normalized positive evidence vs negative/exclusion evidence</p>
+        <p>Margin = top participant confidence - second participant confidence</p>
+        <p>State = threshold + ambiguity + safety gates</p>
+      </div>
       <div className="leaderboard">
         <div className="leaderboard-heading">
           <strong>Top streams</strong>
@@ -65,6 +98,9 @@ export function CandidateDecisionPanel({
               participant.participantId,
               participants
             );
+            const participantBreakdown = breakdown.find(
+              (item) => item.participantId === participant.participantId
+            );
 
             return (
               <div
@@ -72,10 +108,20 @@ export function CandidateDecisionPanel({
                 key={participant.participantId}
               >
                 <span>{index + 1}</span>
-                <strong>
-                  {participant.participantId} / {runtimeName}
-                </strong>
-                <em>{formatPercent(participant.confidence)}</em>
+                <div className="stream-rank-copy">
+                  <strong>
+                    {runtimeName} / {participant.participantId}
+                  </strong>
+                  <small>
+                    +{(participantBreakdown?.positiveImpact ?? 0).toFixed(2)} positive · -
+                    {(participantBreakdown?.negativeImpact ?? 0).toFixed(2)} exclusionary
+                  </small>
+                </div>
+                <div className="rank-score">
+                  <em>{formatPercent(participant.confidence)}</em>
+                  {selected ? <b>selected</b> : null}
+                  {competing ? <b>competing</b> : null}
+                </div>
               </div>
             );
           })
@@ -84,6 +130,28 @@ export function CandidateDecisionPanel({
       <div className="why-box">
         <strong>Why</strong>
         <p>{decisionSummary(snapshot)}</p>
+      </div>
+      <div className="selection-reasons">
+        <article>
+          <strong>Why selected</strong>
+          {selectedEvidence.length === 0 ? (
+            <p>No selected stream or positive selected-stream evidence yet.</p>
+          ) : selectedEvidence.map((item) => (
+            <p key={`${item.signal}_${item.reason}`}>
+              {item.signal.replaceAll("_", " ")} · +{item.impact.toFixed(2)}
+            </p>
+          ))}
+        </article>
+        <article>
+          <strong>Why nearest alternative lost</strong>
+          {rejectedEvidence.length === 0 ? (
+            <p>No negative evidence on the nearest alternative yet; it is lower by score or margin.</p>
+          ) : rejectedEvidence.map((item) => (
+            <p key={`${item.signal}_${item.reason}`}>
+              {item.signal.replaceAll("_", " ")} · {item.impact.toFixed(2)}
+            </p>
+          ))}
+        </article>
       </div>
       <div className="boundary-note">
         Candidate participant stream identified only. Human identity verification and fraud detection are not performed here.

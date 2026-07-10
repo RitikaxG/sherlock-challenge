@@ -20,6 +20,7 @@ export type EventIngestionResponse = {
   readonly eventAccepted: true;
   readonly snapshot: CandidateStateSnapshot;
   readonly llmEvidenceApplied?: boolean;
+  readonly llmEvent?: MeetingEvent;
   readonly llmWarning?: string;
 };
 

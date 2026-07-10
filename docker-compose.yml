@@ -3,7 +3,19 @@ services:
     image: oven/bun:1.3.2
     container_name: sherlock_deps
     working_dir: /app
-    command: bun install --frozen-lockfile
+    command: >
+      sh -lc '
+        set -eu
+        lock_hash="$$(sha256sum bun.lock | cut -d " " -f 1)"
+        stamp="node_modules/.bun-lock-hash"
+        if [ -f "$$stamp" ] && [ "$$(cat "$$stamp")" = "$$lock_hash" ]; then
+          echo "Dependencies already match bun.lock; skipping bun install."
+        else
+          bun install --frozen-lockfile
+          mkdir -p node_modules
+          echo "$$lock_hash" > "$$stamp"
+        fi
+      '
     volumes:
       - .:/app
       - sherlock-node-modules:/app/node_modules

@@ -2,15 +2,11 @@ import type { DemoScenario } from "../../lib/types";
 
 export function ScenarioSelector({
   scenarios,
-  mode,
   selectedId,
-  onModeChange,
   onSelect
 }: {
   scenarios: DemoScenario[];
-  mode: "recommended" | "all";
   selectedId: string;
-  onModeChange: (mode: "recommended" | "all") => void;
   onSelect: (scenario: DemoScenario) => void;
 }) {
   const selectedScenario =
@@ -26,7 +22,7 @@ export function ScenarioSelector({
         <span className="count-badge">{scenarios.length} fixtures</span>
       </div>
       <label className="scenario-dropdown">
-        <span>Available edge/test cases</span>
+        <span>All available edge/test cases</span>
         <select
           value={selectedId}
           onChange={(event) => {
@@ -45,23 +41,6 @@ export function ScenarioSelector({
           ))}
         </select>
       </label>
-      <div className="scenario-mode-toggle" role="group" aria-label="Scenario list mode">
-        <span>Show</span>
-        <button
-          className={mode === "recommended" ? "selected" : ""}
-          onClick={() => onModeChange("recommended")}
-          type="button"
-        >
-          Recommended demo path
-        </button>
-        <button
-          className={mode === "all" ? "selected" : ""}
-          onClick={() => onModeChange("all")}
-          type="button"
-        >
-          All scenarios
-        </button>
-      </div>
 
       {selectedScenario ? (
         <div className="scenario-detail">

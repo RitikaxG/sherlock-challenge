@@ -4,12 +4,21 @@ import { buildApiUrl } from "./sherlock-api";
 import { buildWebSocketUrl } from "./sherlock-ws";
 import { decisionSummary, inferMargin } from "./decision-copy";
 import { describeEvent, formatTimestamp } from "./event-formatters";
-import { getCriteria } from "./criteria";
+import {
+  getCriteria,
+  getParticipantImpactBreakdown,
+  getSignalChartData
+} from "./criteria";
 import {
   demoScenarios,
   recommendedDemoScenarioIds
 } from "./demo-scenarios";
-import { snapshotKey } from "./replay-helpers";
+import {
+  buildEventImpact,
+  connectionStatusLabel,
+  decisionTracePipeline,
+  snapshotKey
+} from "./replay-helpers";
 import { getScenarioResult } from "./scenario-results";
 import type { CandidateStateSnapshot } from "./types";
 
@@ -128,6 +137,104 @@ describe("Sherlock web utilities", () => {
         expect.objectContaining({ signal: "display_name_change" })
       ])
     );
+  });
+
+  test("computes chart totals and participant impact from trace", () => {
+    const snapshot: CandidateStateSnapshot = {
+      ...baseSnapshot,
+      evidence: [
+        {
+          signal: "candidate_email_exact",
+          participantId: "p1",
+          impact: 0.3,
+          reason: "Candidate email matched."
+        },
+        {
+          signal: "interviewer_email_match",
+          participantId: "p2",
+          impact: -0.4,
+          reason: "Interviewer email matched."
+        }
+      ],
+      decisionTrace: {
+        pipeline: [],
+        safetyGates: [],
+        scoreBreakdown: [
+          {
+            participantId: "p1",
+            displayName: "A",
+            positiveWeight: 0.6,
+            negativeWeight: 0.1,
+            rawScore: 0.5,
+            confidence: 0.8
+          }
+        ]
+      }
+    };
+
+    const metadata = getSignalChartData(snapshot).find(
+      (item) => item.name === "Metadata signals"
+    );
+
+    expect(metadata?.positiveImpact).toBeCloseTo(0.3);
+    expect(metadata?.negativeImpact).toBeCloseTo(0.4);
+    expect(getParticipantImpactBreakdown(snapshot)[0]).toEqual(
+      expect.objectContaining({
+        positiveImpact: 0.6,
+        negativeImpact: 0.1
+      })
+    );
+  });
+
+  test("decision trace fallback works without snapshot trace", () => {
+    expect(decisionTracePipeline(null).map((step) => step.step)).toEqual([
+      "Event received",
+      "Signals extracted",
+      "Scores updated",
+      "Decision emitted"
+    ]);
+  });
+
+  test("event impact detects confidence, state, selected stream, and evidence changes", () => {
+    const nextSnapshot: CandidateStateSnapshot = {
+      ...baseSnapshot,
+      state: "CONFIRMED_CANDIDATE",
+      confidence: 0.92,
+      evidence: [
+        {
+          signal: "candidate_self_identification",
+          participantId: "p1",
+          impact: 0.3,
+          reason: "Speaker self-identified."
+        }
+      ]
+    };
+    const impact = buildEventImpact(
+      {
+        type: "transcript_chunk",
+        participantId: "p1",
+        timestampSec: 20,
+        text: "My name is Ritika."
+      },
+      baseSnapshot,
+      nextSnapshot
+    );
+
+    expect(impact.previousState).toBe("LIKELY_CANDIDATE");
+    expect(impact.nextState).toBe("CONFIRMED_CANDIDATE");
+    expect(impact.previousConfidence).toBe(0.8);
+    expect(impact.nextConfidence).toBe(0.92);
+    expect(impact.selectedCandidateChanged).toBe(false);
+    expect(impact.newEvidence).toHaveLength(1);
+  });
+
+  test("connection labels distinguish backend, websocket, polling, and fallback states", () => {
+    expect(connectionStatusLabel("websocket_disconnected")).toBe(
+      "HTTP active · WS closed"
+    );
+    expect(connectionStatusLabel("polling")).toBe("polling backend");
+    expect(connectionStatusLabel("local_fallback")).toBe("local visual fallback");
+    expect(connectionStatusLabel("offline")).toBe("backend unavailable");
   });
 
   test("recommended demo path points at existing scenarios", () => {

@@ -87,7 +87,10 @@ export function transcriptItemForEvent(
       text: event.evidence.map((item) => item.reason).join(" "),
       source: "gemini_transcript_classifier",
       llmEvidence: evidence?.kind ?? event.role,
-      strength: evidence?.strength
+      strength: evidence?.strength,
+      role: event.role,
+      confidence: event.confidence,
+      evidenceKinds: event.evidence.map((item) => item.kind)
     };
   }
 
