@@ -35,10 +35,10 @@ These rules apply to future Codex work in this repository.
 
 ## Current Phase Guardrail
 
-Phase 10 is final submission handoff, verification, and packaging.
+Phase 10 is final verification, documentation cleanup, and packaging.
 
 Do not implement new features in Phase 10.
-Only fix reproducibility, stale docs, command failures, packaging, or submission-readiness issues.
+Only fix reproducibility, stale docs, command failures, packaging, or final verification issues.
 
 Do not implement yet:
 

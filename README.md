@@ -32,23 +32,11 @@ The target architecture is a Bun/Turborepo monorepo with pure identity logic at 
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for package responsibilities, event flow, and the Mermaid diagram.
 
-## Final Submission Docs
+## Project Docs
 
 - [Architecture](./ARCHITECTURE.md)
 - [Evaluation Report](./docs/evaluation-report.md)
-- [Dashboard Demo Guide](./docs/dashboard-demo-guide.md)
-- [Final Demo Script](./docs/final-demo-script.md)
 - [Reproducibility Guide](./docs/reproducibility.md)
-- [Submission Checklist](./docs/submission-checklist.md)
-
-## Recommended Demo Path
-
-1. Generic device insufficient
-2. Strong self-identification
-3. Multiple interviewers
-4. Ambiguous top two
-5. LLM candidate evidence
-6. Stable confirmation
 
 ## Phase Plan Summary
 
@@ -64,14 +52,14 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for package responsibilities, event flo
 | 6 | Fastify ingestion and WebSocket broadcast | Done |
 | 7 | Optional LLM transcript classifier evidence package | Done |
 | 8 | React real-time dashboard and demo experience | Done |
-| 9 | Final evaluation report, demo narrative, reproducibility pass, and submission checklist | Done |
-| 10 | Final submission handoff | Done |
+| 9 | Final evaluation report, reproducibility pass, and docs polish | Done |
+| 10 | Final verification and documentation cleanup | Done |
 
 ## Current Repository Shape
 
 This repository currently starts from a Turborepo Tailwind template and contains:
 
-- `apps/web`: Next.js real-time interview dashboard for scenario replay, candidate decision display, evidence, uncertainty, and demo narration.
+- `apps/web`: Next.js real-time interview dashboard for scenario replay, candidate decision display, evidence, and uncertainty.
 - `apps/http`: Fastify ingestion and WebSocket composition app.
 - `packages/ui`: shared React/Tailwind component package.
 - `packages/shared`: Zod schemas and TypeScript contracts.
@@ -162,7 +150,7 @@ NEXT_PUBLIC_ENABLE_DEMO_MODE=true
 SHERLOCK_WEB_ORIGIN=http://localhost:3000
 ```
 
-Run the full local demo stack with Docker:
+Run the full local application stack with Docker:
 
 ```sh
 docker compose up
@@ -175,7 +163,7 @@ This starts:
 - Fastify backend on `http://localhost:3001`
 - Next.js dashboard on `http://localhost:3000`
 
-Open `http://localhost:3000`, choose a scenario, and start replay. The web app creates a meeting through `apps/http`, posts fixture events, listens for `candidate_state_updated` over WebSocket, and falls back to snapshot polling if the socket is unavailable. If the backend is unavailable and demo mode is enabled, the UI shows a clear local visual demo warning instead of pretending it is connected.
+Open `http://localhost:3000`, choose a scenario, and start replay. The web app creates a meeting through `apps/http`, posts fixture events, listens for `candidate_state_updated` over WebSocket, and falls back to snapshot polling if the socket is unavailable. If the backend is unavailable and demo mode is enabled, the UI shows a clear local visual fallback warning instead of pretending it is connected.
 
 ### Dashboard explanation model
 
@@ -185,8 +173,6 @@ The dashboard explains four layers:
 2. Signals: what evidence was extracted.
 3. Fusion: how weighted evidence affected each participant.
 4. Safety gates: why the engine selected, refused, or delayed confirmation.
-
-For final recording, use the production build or ensure dev overlays and browser extensions are disabled so local tooling badges do not appear in the demo.
 
 Manual Bun fallback:
 
@@ -204,17 +190,14 @@ Postgres only:
 docker compose up postgres
 ```
 
-## Final Submission Status
+## Project Status
 
-The repository is ready for final handoff after running the verification checklist.
+The repository is ready after running the verification commands.
 
-Final handoff materials:
+Primary implementation docs:
 
 - Architecture doc
 - Evaluation report
-- Dashboard demo guide
-- Final demo script
 - Reproducibility guide
-- Submission checklist
 
 The engine identifies the candidate participant stream; it does not verify legal human identity or make cheating/fraud verdicts.

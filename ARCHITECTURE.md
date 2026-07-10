@@ -6,7 +6,7 @@ Sherlock's Candidate Identity Fusion Engine is designed as a monorepo with pure 
 
 | Area | Current status | Target responsibility |
 | --- | --- | --- |
-| `apps/web` | Present with Phase 8 dashboard | Real-time interview dashboard for scenario replay, participant grid, candidate decision, evidence, uncertainty, criteria transparency, transcript, timeline, and demo narration. |
+| `apps/web` | Present with Phase 8 dashboard | Real-time interview dashboard for scenario replay, participant grid, candidate decision, evidence, uncertainty, criteria transparency, transcript, and timeline. |
 | `apps/docs` | Removed | Not part of the current target architecture. |
 | `apps/http` | Present with Fastify routes and WebSocket endpoint | Deployable backend transport/composition layer. It composes HTTP routes and the WebSocket endpoint in one server, validates inputs, calls packages, persists snapshots when configured, and broadcasts candidate-state updates. |
 | `packages/core` | Present with fusion engine | Pure identity engine: session state, deterministic signals, weighted fusion scoring, confidence/state decisions, ambiguity handling, and explanations. |
